@@ -1,9 +1,14 @@
 \input{/home/eruiz/dev/latex/preamble.tex}
-\lstset{language=Python}
+\usepackage{minted}
 \begin{document}
     \title{CS 207: Milestone 1}
-    \author{Erick Ruiz\\ \texttt{eruiz@g.harvard.edu}}
-    \date{October 26, 2019}
+    \author{
+        Kailas Amin\\ \texttt{kailasamin@college.harvard.edu}
+        \and Simon (Xin) Dong\\ \texttt{xindong@g.harvard.edu}
+        \and Jingyuan Liu\\ \texttt{jingyuanliu@g.harvard.edu}
+        \and Erick Ruiz\\ \texttt{eruiz@g.harvard.edu}
+        }
+    \date{October 29, 2019}
     \maketitle
     
     \section*{Introduction}
@@ -62,7 +67,8 @@
         \label{eq:fd}
     \end{equation}
     The finite change, $h$, is called the step size, and equation \eqref{eq:fd} 
-    is known as the forward difference. 
+    is known as the forward difference. Its geometric interpretation is 
+    described in Figure \ref{fig:fd-schematic}.
     \begin{figure}[H]
         \centering
         \begin{tikzpicture}
@@ -97,6 +103,7 @@
         not always the case.}
         \label{fig:fd-schematic}
     \end{figure}
+    
     Although the finite difference method is useful and easy to implement, its 
     accuracy can vary depending on the step size that is chosen. Suppose we wish
     to approximate the derivative of $f(x)=\ln x$ using the forward difference 
@@ -131,9 +138,6 @@
     feature that even some mainstream machine learning libraries, such as 
     PyTorch, lack. 
     \begin{itemize}
-        \item Introduce numerical methods for calculating derivatives (e.g. 
-        finite difference) and discuss their strengths and weaknesses
-        \item Propose automatic differentiation (AD) as a solution
         \item Explain the need for implementing the forward mode of AD
         \item What are the advantages of forward mode compared to reverse mode?
     \end{itemize}
@@ -146,21 +150,41 @@
     will vary slightly, depending on the operating system, but essentially, the 
     user will execute commands from the terminal to update the package manager 
     and install \texttt{PackageName}. 
+    \begin{minted}{bash}
+    # Using conda
+    conda update conda
+    conda install -c conda-forge PackageName
     
+    # Using pip
+    pip install PackageName
+    \end{minted}
     Once \texttt{PackageName} is installed, the user must import it to be able 
     to use it. Here, the user will have the choice to either import the entire 
     library or to choose only a subset of modules, classes, or methods to import.
-    For instance, importing \texttt{PackageName.linear} will only import the 
-    automatic differentiation class, and all of its methods, for linear 
-    functions of the form $f = \alpha x + \beta$. Then, instances of 
-    \texttt{PackageName.linear} may be defined by passing in the relevant 
-    arguments. For example, defining \texttt{f = PackageName.linear(2.0)} would 
-    instantiate an object whose function value is \texttt{2.0} and whose 
-    derivative is the default value (i.e. \texttt{da = 1.0}). However, the user 
-    will also have the ability to define a value for the derivative, if 
-    necessary (e.g. \texttt{g = PackageName.linear(3.0, 2.1)}). Instances of 
-    other classes pertaining to \texttt{PackageName} would be defined in a 
-    similar manner. 
+    For instance, if the user only wishes to import the automatic 
+    differentiation class (and all of its methods) for linear functions of the 
+    form $f = \alpha x + \beta$, then they will have the freedom to do so. 
+    \begin{minted}{python}
+    # Forward mode automatic differentiation for linear functions
+    import PackageName.linear as linear
+    \end{minted}
+    It is widely accepted as good practice to use an alias when importing 
+    libraries. In this example, the alias for \texttt{PackagName.linear} is just
+    \texttt{linear}, but the user will have the ability to choose the alias on 
+    their own. Instances of \texttt{linear} may be defined by passing in the 
+    relevant arguments. For example, the user could pass in a function value and
+    a derivative value or just a function value. If the latter approach is 
+    taken, the derivative value will be set to the default. 
+    \begin{minted}{python}  
+    # Specify both the function and derivative values
+    f = PackageName.linear(3.0, 2.1)
+    
+    # Specify the function value only
+    # The derivative value will default to 1.0 for linear functions.
+    g = PackageName.linear(2.0)
+    \end{minted}
+    Instances of other classes pertaining to \texttt{PackageName} would be 
+    defined in a similar manner. 
     
     Once the user defines an instance of a class, they may perform standard 
     elementary operations on that object. For example, \texttt{f*g} would return
@@ -180,6 +204,5 @@
         \item Should this be generalized?
         \item What about other elementary functions? Should examples of these be
         included as well?
-        \item Is pseudo-code really necessary here?
     \end{itemize} 
 \end{document}
