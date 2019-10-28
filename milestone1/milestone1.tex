@@ -1,0 +1,185 @@
+\input{/home/eruiz/dev/latex/preamble.tex}
+\lstset{language=Python}
+\begin{document}
+    \title{CS 207: Milestone 1}
+    \author{Erick Ruiz\\ \texttt{eruiz@g.harvard.edu}}
+    \date{October 26, 2019}
+    \maketitle
+    
+    \section*{Introduction}
+    Understanding the concept of a derivative is crucial to all aspiring and 
+    practicing scientists, engineers, and mathematicians. It is one of the first
+    concepts introduced in first-year calculus courses at all universities. The 
+    idea is simple. Given a function, $f(x)$, how can we quantify the rate of 
+    change of the function due to an infinitesimal change, $\Delta x$, in the 
+    argument, $x$? The answer is typically given in terms of the limit 
+    definition of the derivative.
+    \begin{equation}
+        f'(x) = \lim_{\Delta x\rightarrow 0} \frac{f(x+\Delta x)-f(x)}{\Delta x}
+        \label{eq:lim-def}
+    \end{equation}
+    While equation \eqref{eq:lim-def} holds for any function, in practice, it is
+    easier to calculate derivatives analytically according to a set of rules. 
+    However, obtaining an analytical expression for the derivative becomes 
+    exceedingly difficult if the function of interest is composed of many 
+    elementary functions. For example, consider the following function.
+    \begin{equation}
+        f(x) = \exp\left[\frac{\sqrt{x^3 - \ln x + \sin(4x^2)}}{\cos(3x^5)}\right]
+        \label{eq:ugly-eq}
+    \end{equation}
+    Calculating the first derivative would result in the following expression.
+    \begin{align}
+        f'(x) &= \exp\left[\frac{\sqrt{x^3 - \ln x + \sin(4x^2)}}{\cos(3x^5)}\right]
+        \sec^2(3x^5)\dots\nonumber\\
+        &\qquad\times\left\{
+        \frac{\cos(3x^5)}{2\sqrt{x^3 - \ln x + \sin(4x^2)}}
+        \left[3x^2-\frac{1}{x}+8x\cos(4x^2)\right]\dots\right.\nonumber\\
+        &\qquad\qquad+
+        \left.\vphantom{\frac{\cos(3x^5)}{2\sqrt{x^3 - \ln x + \sin(4x^2)}}}
+        15x^4\sin(3x^5)\sqrt{x^3 - \ln x + \sin(4x^2)}
+        \right\}
+    \end{align}
+    Although feasible, successive calculations become more and more complex, and
+    in practice, the quantity to be differentiated may not be a function in 
+    closed-form but rather a set of measurements or values given as a 
+    one-dimensional vector of numbers. In that case, equation \eqref{eq:lim-def}
+    can be approximated using the finite difference method, which replaces an 
+    infinitesimal change in the argument for a finite change. To show how this 
+    works, let us write the Taylor series expansion of an arbitrary function, 
+    $f(x)$, at the point $x+h$.
+    \begin{equation}
+        f(x+h) = f(x) + hf'(x) + \frac{h^2}{2}f''(x) + \dots
+        \label{eq:f-tay}
+    \end{equation}
+    Keeping only terms of $\mathcal{O}(h)$ leaves us with
+    \begin{equation}
+        f(x) \approx f(h) + hf'(x),
+    \end{equation}
+    which we can rearrange to write an approximate expression for the derivative,
+    $f'(x)$.
+    \begin{equation}
+        f'(x) \approx \frac{f(x+h)-f(x)}{h}
+        \label{eq:fd}
+    \end{equation}
+    The finite change, $h$, is called the step size, and equation \eqref{eq:fd} 
+    is known as the forward difference. 
+    \begin{figure}[H]
+        \centering
+        \begin{tikzpicture}
+            % Help lines
+            % \draw[help lines] (0,0) grid (6,4);
+            
+            % Axes
+            \draw[<->, >=stealth, thick] (0,4) node[above]{$y$} -- (0,0) -- 
+            (6,0) node[right]{$x$};
+            
+            % Some function
+            \draw[smooth, samples=100, domain=0.0:4.85] 
+                plot(\x,{0.1*\x^2-1.1*sin(\x)*\x^3+exp(0.1*\x)*\x});
+                
+            % Tangent line
+            \draw[red] (3,3.4) -- (4,2.65);
+            
+            % Step size
+            \draw[dashed] (3,0) -- (3,3.4);
+            \draw[dashed] (4,0) -- (4,2.65);
+            \draw[|<->|, >=stealth] (3,-0.3) -- (3.5,-0.3) node[fill=white]{$h$}
+                -- (4,-0.3);
+            
+            % Function annotations
+            \draw[dashed] (3,3.4) -- (0,3.4) node[left]{$f(x)$};
+            \draw[dashed] (4,2.65) -- (0,2.65) node[left]{$f(x+h)$};
+        \end{tikzpicture}
+        \caption{\textbf{Geometric interpretation of the finite difference 
+        method.} As the step size, $h$, decreases, so does the difference 
+        between $f(x+h)$ and $f(x)$. In principle, this should lead to a more 
+        accurate approximation to the true derivative, $f'(x)$. However, this is
+        not always the case.}
+        \label{fig:fd-schematic}
+    \end{figure}
+    Although the finite difference method is useful and easy to implement, its 
+    accuracy can vary depending on the step size that is chosen. Suppose we wish
+    to approximate the derivative of $f(x)=\ln x$ using the forward difference 
+    method described in equation \eqref{eq:fd} using step sizes $h=\{10^{-1},\,
+    10^{-7},\,10^{-15}\}$. This is rather unnecessary because the analytical 
+    derivative is just $f'(x) = 1/x$, but this example will serve to illustrate 
+    the drawbacks of the finite difference method. At $h=10^{-1}$, the numerical
+    derivative is inaccurate because the step size is too large, making the 
+    calculations susceptible to truncation error. Conversely, at $h=10^{-15}$, 
+    the forward difference method also gives inaccurate results because the 
+    calculations can only be represented to a finite precision by the hardware 
+    in use. Hence, rounding error also affects the stability of the finite 
+    difference method. Figure \ref{fig:fd-accuracy} summarizes the results.
+    % Finite difference accuracy
+    % --------------------------
+    % Borrowed from CS 207: Homework 4, Problem 1 
+    \begin{figure}
+        \centering
+        \input{fd.tex}
+        \caption{\textbf{Accuracy of the finite difference method.} The accuracy
+        and stability of the approximate derivative actually gets worse with 
+        decreasing step size. The optimal step size for this case is 
+        $h=10^{-7}$.}
+        \label{fig:fd-accuracy}
+    \end{figure}
+    
+    The method of automatic differentiation, sometimes also referred to as 
+    algorithmic differentiation, addresses the weaknesses of the finite 
+    difference method by providing a systematic way to calculate derivatives 
+    numerically to arbitrary precision. The goal of \texttt{PackageName} is to 
+    implement the forward mode of automatic differentiation, as it is a relevant
+    feature that even some mainstream machine learning libraries, such as 
+    PyTorch, lack. 
+    \begin{itemize}
+        \item Introduce numerical methods for calculating derivatives (e.g. 
+        finite difference) and discuss their strengths and weaknesses
+        \item Propose automatic differentiation (AD) as a solution
+        \item Explain the need for implementing the forward mode of AD
+        \item What are the advantages of forward mode compared to reverse mode?
+    \end{itemize}
+    \section*{Background}
+    
+    \section*{Usage Guide}
+    Assuming that the user already has the latest version of Python installed, 
+    the first step towards using \texttt{PackageName} will be the installation, 
+    which can be accomplished using \texttt{conda} or \texttt{pip}. This process
+    will vary slightly, depending on the operating system, but essentially, the 
+    user will execute commands from the terminal to update the package manager 
+    and install \texttt{PackageName}. 
+    
+    Once \texttt{PackageName} is installed, the user must import it to be able 
+    to use it. Here, the user will have the choice to either import the entire 
+    library or to choose only a subset of modules, classes, or methods to import.
+    For instance, importing \texttt{PackageName.linear} will only import the 
+    automatic differentiation class, and all of its methods, for linear 
+    functions of the form $f = \alpha x + \beta$. Then, instances of 
+    \texttt{PackageName.linear} may be defined by passing in the relevant 
+    arguments. For example, defining \texttt{f = PackageName.linear(2.0)} would 
+    instantiate an object whose function value is \texttt{2.0} and whose 
+    derivative is the default value (i.e. \texttt{da = 1.0}). However, the user 
+    will also have the ability to define a value for the derivative, if 
+    necessary (e.g. \texttt{g = PackageName.linear(3.0, 2.1)}). Instances of 
+    other classes pertaining to \texttt{PackageName} would be defined in a 
+    similar manner. 
+    
+    Once the user defines an instance of a class, they may perform standard 
+    elementary operations on that object. For example, \texttt{f*g} would return
+    a new object whose function value is the product of the function values of 
+    \texttt{f} and \texttt{g} and whose derivative value is the product of the
+    corresponding derivative values of \texttt{f} and \texttt{g}, according 
+    to the product rule. 
+    \begin{equation}
+        \left.\frac{d}{dx}(fg)\right|_{x=a} 
+        = 
+        \left.\vphantom{\frac{d}{dx}}f'(x)g(x) + f(x)g'(x)\right|_{x=a}
+    \end{equation}
+    This way, the user would have the ability to calculate derivatives of 
+    composite functions using elementary operations while retaining arbitrary 
+    precision at each evaluation step.
+    \begin{itemize}
+        \item Should this be generalized?
+        \item What about other elementary functions? Should examples of these be
+        included as well?
+        \item Is pseudo-code really necessary here?
+    \end{itemize} 
+\end{document}
