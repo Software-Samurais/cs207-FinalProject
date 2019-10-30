@@ -1,0 +1,183 @@
+Understanding the concept of a derivative is crucial to all aspiring and 
+practicing scientists, engineers, and mathematicians. It is one of the first
+concepts introduced in first-year calculus courses at all universities. The 
+idea is simple. Given a function, $f(x)$, how can we quantify the rate of 
+change of the function due to an infinitesimal change, $\Delta x$, in the 
+argument, $x$? The answer is typically given in terms of the limit 
+definition of the derivative.
+\begin{equation}
+    f'(x) = \lim_{\Delta x\rightarrow 0} \frac{f(x+\Delta x)-f(x)}{\Delta x}
+    \label{eq:lim-def}
+\end{equation}
+While equation \eqref{eq:lim-def} holds for any function, in practice, it is
+easier to calculate derivatives analytically according to a set of rules. 
+However, obtaining an analytical expression for the derivative becomes 
+exceedingly difficult if the function of interest is composed of many 
+elementary functions. For example, consider the following function.
+\begin{equation}
+    f(x) = \exp\left[\frac{\sqrt{x^3 - \ln x + \sin(4x^2)}}{\cos(3x^5)}\right]
+    \label{eq:ugly-eq}
+\end{equation}
+Calculating the first derivative would result in the following expression.
+\begin{align}
+    f'(x) &= \exp\left[\frac{\sqrt{x^3 - \ln x + \sin(4x^2)}}{\cos(3x^5)}\right]
+    \sec^2(3x^5)\dots\nonumber\\
+    &\qquad\times\left\{
+    \frac{\cos(3x^5)}{2\sqrt{x^3 - \ln x + \sin(4x^2)}}
+    \left[3x^2-\frac{1}{x}+8x\cos(4x^2)\right]\dots\right.\nonumber\\
+    &\qquad\qquad+
+    \left.\vphantom{\frac{\cos(3x^5)}{2\sqrt{x^3 - \ln x + \sin(4x^2)}}}
+    15x^4\sin(3x^5)\sqrt{x^3 - \ln x + \sin(4x^2)}
+    \right\}
+\end{align}
+Although feasible, successive calculations become more and more complex, and
+in practice, the quantity to be differentiated may not be a function in 
+closed-form but rather a set of measurements or values given as a 
+one-dimensional vector of numbers. In that case, equation \eqref{eq:lim-def}
+can be approximated using the finite difference method, which replaces an 
+infinitesimal change in the argument for a finite change. To show how this 
+works, let us write the Taylor series expansion of an arbitrary function, 
+$f(x)$, at the point $x+h$.
+\begin{equation}
+    f(x+h) = f(x) + hf'(x) + \frac{h^2}{2}f''(x) + \dots
+    \label{eq:f-tay}
+\end{equation}
+Keeping only terms of $\mathcal{O}(h)$ leaves us with
+\begin{equation}
+    f(x) \approx f(h) + hf'(x),
+\end{equation}
+which we can rearrange to write an approximate expression for the derivative,
+$f'(x)$.
+\begin{equation}
+    f'(x) \approx \frac{f(x+h)-f(x)}{h}
+    \label{eq:fd}
+\end{equation}
+The finite change, $h$, is called the step size, and equation \eqref{eq:fd} 
+is known as the forward difference. Its geometric interpretation is 
+described in Figure \ref{fig:fd-schematic}.
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        % Help lines
+        % \draw[help lines] (0,0) grid (6,4);
+        
+        % Axes
+        \draw[<->, >=stealth, thick] (0,4) node[above]{$y$} -- (0,0) -- 
+        (6,0) node[right]{$x$};
+        
+        % Some function
+        \draw[smooth, samples=100, domain=0.0:4.85] 
+            plot(\x,{0.1*\x^2-1.1*sin(\x)*\x^3+exp(0.1*\x)*\x});
+            
+        % Tangent line
+        \draw[red] (3,3.4) -- (4,2.65);
+        
+        % Step size
+        \draw[dashed] (3,0) -- (3,3.4);
+        \draw[dashed] (4,0) -- (4,2.65);
+        \draw[|<->|, >=stealth] (3,-0.3) -- (3.5,-0.3) node[fill=white]{$h$}
+            -- (4,-0.3);
+        
+        % Function annotations
+        \draw[dashed] (3,3.4) -- (0,3.4) node[left]{$f(x)$};
+        \draw[dashed] (4,2.65) -- (0,2.65) node[left]{$f(x+h)$};
+    \end{tikzpicture}
+    \caption{\textbf{Geometric interpretation of the finite difference 
+    method.} As the step size, $h$, decreases, so does the difference 
+    between $f(x+h)$ and $f(x)$. In principle, this should lead to a more 
+    accurate approximation to the true derivative, $f'(x)$. However, this is
+    not always the case.}
+    \label{fig:fd-schematic}
+\end{figure}
+
+Although the finite difference method is useful and easy to implement, its 
+accuracy can vary depending on the step size that is chosen. Suppose we wish
+to approximate the derivative of $f(x)=\ln x$ using the forward difference 
+method described in equation \eqref{eq:fd} using step sizes $h=\{10^{-1},\,
+10^{-7},\,10^{-15}\}$. This is rather unnecessary because the analytical 
+derivative is just $f'(x) = 1/x$, but this example will serve to illustrate 
+the drawbacks of the finite difference method. At $h=10^{-1}$, the numerical
+derivative is inaccurate because the step size is too large, making the 
+calculations susceptible to truncation error. Conversely, at $h=10^{-15}$, 
+the forward difference method also gives inaccurate results because the 
+calculations can only be represented to a finite precision by the hardware 
+in use. Hence, rounding error also affects the stability of the finite 
+difference method. Figure \ref{fig:fd-accuracy} summarizes the results.
+% Finite difference accuracy
+% --------------------------
+% Borrowed from CS 207: Homework 4, Problem 1 
+\begin{figure}[H]
+    \centering
+    \input{figures/fd.tex}
+    \caption{\textbf{Accuracy of the finite difference method.} The accuracy
+    and stability of the approximate derivative actually gets worse with 
+    decreasing step size. The optimal step size for this case is 
+    $h=10^{-7}$.}
+    \label{fig:fd-accuracy}
+\end{figure}
+
+In order to evaluate the derivative via forward mode AD we first construct a computational graph which encodes the composition and dependence of sub-function evaluations. It is important to note that each elementary function evaluation needs to be understood at a symbolic level! After constructing the graph, the chain rule is simply applied successively to evaluations at a single point which then generates a table known as the computational trace. To illustrate the concept, consider the following example, adapted from \emph{Evaluating derivatives: principles and techniques of algorithmic differentiation} by Griewank and Walther. 
+\begin{equation}
+    f(x,y) = \left[\sin\left(\frac{x}{y}\right) + \frac{x}{y} - \exp(y)\right]
+    \left[\frac{x}{y} - \exp(y)\right]
+    \label{eq:ex2}
+\end{equation}
+A function of two arguments (i.e. variables $x$ and $y$) like the one in equation \eqref{eq:ex2} can be evaluated at point by replacing the arguments with numerical values. The series of calculations needed to carry out the evaluation can be visualized as a computation graph, as shown in Figure \ref{fig:cg-ex2}. The graph helps visualize the order of the computations, and it also establishes the dependence of successive calculations on previous ones. The procedure for constructing such a graph is the following. Define a node for each of the inputs using a new variable. For this example, we will let $x_1 = x$ and $x_2 = y$. From there, any successive nodes may accept two inputs at maximum, and each node represents a new calculation. For example, in the computational graph shown in Figure \ref{fig:cg-ex2}, the node $x_3$ represents the calculation $x_1/x_2$, which later becomes an input in successive nodes. While the computational graph is useful for visualizing the entire computation procedure, the computational trace is useful for storing values as the computation is carried out. The computational trace for $f(1.5000, 0.5000)$ is given in Table \ref{tab:trace-ex}.
+
+Beyond the basic forward mode, there exists other implementations of AD in the so called ``reverse mode". This approach can increase efficiency significantly in cases when the number of inputs is far greater than the number of outputs. 
+% Computational graph for the example from Griewank and Walther
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        % Inputs
+        \node (y) at (1,2) {$y$};
+        \node (x) at (1,4) {$x$};
+        
+        % Successive nodes
+        \node[draw, circle] (x1) at (3,4) {$x_1$};
+        \node[draw, circle] (x2) at (3,2) {$x_2$};
+        \node[draw, circle] (x3) at (5,4) {$x_3$};
+        \node[draw, circle] (x4) at (7,4) {$x_4$};
+        \node[draw, circle] (x5) at (5,2) {$x_5$};
+        \node[draw, circle] (x6) at (7,2) {$x_6$};
+        \node[draw, circle] (x7) at (9,4) {$x_7$};
+        \node[draw, circle] (x8) at (10,2) {$x_8$};
+        \node (f) at (12.5,2) {$f(x,y)$};
+        
+        % Edges
+        \draw (x) edge[->, >=stealth] (x1)
+              (y) edge[->, >=stealth] (x2)
+              (x2) edge[->, >=stealth] (x3)
+              (x2) edge[->, >=stealth] (x5)
+              (x1) edge[->, >=stealth] (x3)
+              (x3) edge[->, >=stealth] (x4)
+              (x3) edge[->, >=stealth] (x6)
+              (x5) edge[->, >=stealth] (x6)
+              (x4) edge[->, >=stealth] (x7)
+              (x6) edge[->, >=stealth] (x7)
+              (x6) edge[->, >=stealth] (x8)
+              (x7) edge[->, >=stealth] (x8)
+              (x8) edge[->, >=stealth] (f);
+    \end{tikzpicture}
+    \caption{\textbf{A computational graph.} The function given equation \eqref{eq:ex2} takes two inputs, $x$ and $y$. Standard elementary operations are performed on the inputs to produce a single output, $f(x,y)$.}
+    \label{fig:cg-ex2}
+\end{figure}
+% Computational trace
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lclclcl}
+         $x_1$&=&$x$&=&1.5000&&\\
+         $x_2$&=&$y$&=&0.5000&&\\
+         \hline\hline
+         $x_3$&=&$x_1/x_2$&=&1.5000/0.5000&=&3.000\\
+         $x_4$&=&$\sin(x_3)$&=&$\sin(3.0000)$&=&0.1411\\
+         $x_5$&=&$\exp(x_2)$&=&$\exp(0.5000)$&=&1.6487\\
+         $x_6$&=&$x_3-x_5$&=&3.0000-1.6487&=&1.3515\\
+         $x_7$&=&$x_4+x_6$&=&0.1411+1.3513&=&1.4924\\
+         $x_8$&=&$x_7\times x_6$&=&1.4924$\times$1.3513&=&2.0167\\
+         \hline\hline
+         $f$&=&$x_8$&=&2.0167&&
+    \end{tabular}
+    \caption{A typical computational trace using the example given in equation \eqref{eq:ex2}.}
+    \label{tab:trace-ex}
+\end{table}
