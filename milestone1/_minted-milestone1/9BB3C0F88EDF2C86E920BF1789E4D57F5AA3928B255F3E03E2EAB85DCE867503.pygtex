@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{gradient}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{node}\PYG{p}{,} \PYG{n}{output\PYGZus{}grad}\PYG{p}{)}
+\end{Verbatim}
