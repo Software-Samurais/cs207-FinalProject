@@ -1,0 +1,12 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{def} \PYG{n+nf}{gradient}\PYG{p}{(}\PYG{n}{out}\PYG{p}{):}
+    \PYG{n}{node\PYGZus{}to\PYGZus{}grad} \PYG{o}{=} \PYG{p}{\PYGZob{}\PYGZcb{}}
+    \PYG{n}{nodes} \PYG{o}{=} \PYG{n}{get\PYGZus{}reverse\PYGZus{}topo\PYGZus{}order}\PYG{p}{(}\PYG{n}{out}\PYG{p}{)}
+    \PYG{k}{for} \PYG{n}{node} \PYG{o+ow}{in} \PYG{n}{nodes}\PYG{p}{:}
+        \PYG{c+c1}{\PYGZsh{} get gradient of current node}
+        \PYG{n}{grad} \PYG{o}{=} \PYG{n+nb}{sum}\PYG{p}{(}\PYG{n}{partial\PYGZus{}adjoints} \PYG{k+kn}{from} \PYG{n+nn}{output\PYGZus{}edges}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} get partial gradient of input nodes of current node}
+        \PYG{n}{input\PYGZus{}grads} \PYG{o}{=} \PYG{p}{[}\PYG{n}{node}\PYG{o}{.}\PYG{n}{gradient}\PYG{p}{(}\PYG{n}{i}\PYG{p}{,} \PYG{n}{grad}\PYG{p}{)} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n}{node}\PYG{o}{.}\PYG{n}{inputs}\PYG{p}{]}
+        \PYG{n}{add} \PYG{n}{input\PYGZus{}grads} \PYG{n}{to} \PYG{n}{node\PYGZus{}to\PYGZus{}grad}
+    \PYG{k}{return} \PYG{n}{node\PYGZus{}to\PYGZus{}grad}
+\end{Verbatim}
