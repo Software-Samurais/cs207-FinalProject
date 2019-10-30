@@ -1,0 +1,91 @@
+\subsection{Installation}
+Assuming that the user already has the latest version of Python and a package
+manager of choice installed, the first step towards using \texttt{AutoDiff} will
+be the installation. This can be accomplished using \texttt{conda} or
+\texttt{pip}, the two most popular package managers. This process will vary
+slightly, depending on the operating system, but essentially, the user will
+execute commands from the terminal to update the package manager and install
+\texttt{AutoDiff}. 
+\begin{minted}{bash}
+# Using conda
+conda update conda
+conda install -c conda-forge AutoDiff
+
+# Using pip
+pip install AutoDiff
+\end{minted}
+\subsection{Getting Started}
+Once \texttt{AutoDiff} is installed, the user must import it to be able to use it.
+The user will have the option to either import the entire library or to choose
+only a subset of modules, classes, or methods to import. For instance, if the user
+only wishes to import the automatic differentiation class (and all of its methods)
+for linear functions of the form $f(x) = \alpha x + \beta$, then they will have
+the freedom to do so. It is widely accepted as good practice to use an alias when
+importing libraries. In the following example, the alias for
+\texttt{AutoDiff.linear} is just \texttt{linear}. Users will have the ability to
+define their own alias.
+\begin{minted}{python}
+# Imports the necessary constructors and elementary functions 
+# (sin, exp, sqrt, etc.) 
+from AutoDiff import *
+
+# Only imports forward mode automatic differentiation for linear functions
+import AutoDiff.linear as linear
+\end{minted}
+ 
+
+\subsection{Example Usage}
+Here we use few simple examples to illustrate the API and data structures of the 
+\texttt{AutoDiff} module.
+\begin{minted}{python}  
+import AutoDiff as ad
+
+# A differentiable object instantiation
+x = ad.Variable(3.0)
+print(x.val, x.der)
+# output: 3.0 0.0
+
+y = x**2
+print(y)
+# output: AutoDiff(2.25, [3.0])
+
+# What is dy/dx?
+print y.der
+# output: 3.0
+
+# Specify both the function and derivative values
+f = ad.linear(3.0, [2.1])
+
+# Specify the function value only
+# The derivative value will default to 1.0 for linear functions.
+g = ad.linear(2.0)
+\end{minted}
+
+Instances of other classes pertaining to \texttt{AutoDiff} would be 
+defined in a similar manner. Once the user defines an instance of a class, they
+may perform standard elementary operations on that object. For example,
+\texttt{f*g} would return a new object whose function value is the product of the
+function values of \texttt{f} and \texttt{g} and whose derivative value is the
+product of the corresponding derivative values of \texttt{f} and \texttt{g},
+according to the product rule. 
+\begin{equation}
+    \left.\frac{d}{dx}(fg)\right|_{x=a} 
+    = 
+    \left.\vphantom{\frac{d}{dx}}f'(x)g(x) + f(x)g'(x)\right|_{x=a}
+\end{equation}
+This way, the user would have the ability to calculate derivatives of 
+composite functions using elementary operations while retaining arbitrary 
+precision at each evaluation step. Suppose our expression is $z = x_1 \sin(x_2)$.
+\begin{minted}{python} 
+import numpy as np
+# Multivariate Examples
+x1 = ad.Variable(1.0)
+x2 = ad.Variable(np.pi/2)
+z = x1 * sin(x2)
+print(z)
+# output: AutoDiff(1.0, array[1.0, 1.0])
+# array: dz/dx1, dz/dx2
+\end{minted}
+As can be seen in the examples, when an \texttt{AutoDiff} object is printed out,
+we see two sets of numbers. The first is the current value. The next set of values
+are the derivatives of each variable, evaluated at the nominal value.
