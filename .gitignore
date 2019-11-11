@@ -1,0 +1,9 @@
+# Compiled source #
+###################
+*.pyc
+*.aux
+*.pygtex 
+
+# Logs and databases #
+######################
+*.log
