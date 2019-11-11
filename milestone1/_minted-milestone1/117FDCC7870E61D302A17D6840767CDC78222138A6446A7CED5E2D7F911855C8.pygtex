@@ -1,8 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{c+c1}{\PYGZsh{} Using conda}
-conda update conda
-conda install \PYGZhy{}c conda\PYGZhy{}forge AutoDiff
-
-\PYG{c+c1}{\PYGZsh{} Using pip}
-pip install AutoDiff
-\end{Verbatim}

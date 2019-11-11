@@ -1,8 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{c+c1}{\PYGZsh{} Imports the necessary constructors and elementary functions}
-\PYG{c+c1}{\PYGZsh{} (sin, exp, sqrt, etc.)}
-\PYG{k+kn}{from} \PYG{n+nn}{AutoDiff} \PYG{k+kn}{import} \PYG{o}{*}
-
-\PYG{c+c1}{\PYGZsh{} Only imports forward mode automatic differentiation for linear functions}
-\PYG{k+kn}{import} \PYG{n+nn}{AutoDiff.linear} \PYG{k+kn}{as} \PYG{n+nn}{linear}
-\end{Verbatim}
