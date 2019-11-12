@@ -73,7 +73,10 @@ def check_tol(x, tol=1e-8):
         x._der = np.round(x._der)
 
     return x
-        
+
+# Try to use check_tol as a decorator for these functions instead of having to 
+# call it explicitly each time.
+
 def sin(x):
     return check_tol(AutoDiff(np.sin(x._val), np.cos(x._val)*x._der))
 
@@ -81,7 +84,16 @@ def cos(x):
     return check_tol(AutoDiff(np.cos(x._val), -np.sin(x._val)*x._der))
     
 def tan(x):
-    return check_tol(AutoDiff(np.tan(x._val), np.cos(x._val)**(-2)*x._der))
+    if np.cos(x._val) != 0:
+        return check_tol(AutoDiff(np.tan(x._val), np.cos(x._val)**(-2)*x._der))
+    else:
+        raise ValueError("Divide by zero encountered.")
     
 def exp(x):
     return check_tol(AutoDiff(np.exp(x._val), np.exp(x._val)*x._der))
+    
+def log(x):
+    if x._val != 0:
+        return check_tol(AutoDiff(np.log(x._val), x._der/x._val))
+    else:
+        raise ValueError("Divide by zero encountered.")
