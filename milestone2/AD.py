@@ -54,19 +54,26 @@ class AutoDiff():
     def __pow__(self, n):
         return AutoDiff(self.val**n, n*self.val**(n-1)*self.der)
 
-# NOTE: The sine and cosine methods work, but they should return zero if the 
-# values get too small. Machine precision for floating point numbers, according 
-# to NumPy, is approximately 2.2e-16. Hence, any of these methods should just 
-# return zero if the result falls below machine precision. 
+def check_tol(x, tol=1e-8):
+    
+    # Check function values
+    if abs(x.val - np.round(x.val)) < tol:
+        x.val = np.round(x.val)
+        
+    # Check derivative values
+    if abs(x.der - np.round(x.der)) < tol:
+        x.der = np.round(x.der)
 
+    return x
+        
 def sin(x):
-    return AutoDiff(np.sin(x.val), np.cos(x.val)*x.der)
+    return check_tol(AutoDiff(np.sin(x.val), np.cos(x.val)*x.der))
 
 def cos(x):
-    return AutoDiff(np.cos(x.val), -np.sin(x.val)*x.der)
+    return check_tol(AutoDiff(np.cos(x.val), -np.sin(x.val)*x.der))
     
 def tan(x):
-    return AutoDiff(np.tan(x.val), np.cos(x.val)**(-2)*x.der)
+    return check_tol(AutoDiff(np.tan(x.val), np.cos(x.val)**(-2)*x.der))
     
 def exp(x):
-    return AutoDiff(np.exp(x.val), np.exp(x.val)*x.der)
+    return check_tol(AutoDiff(np.exp(x.val), np.exp(x.val)*x.der))
