@@ -5,6 +5,10 @@
 *.pygtex 
 *.coverage
 
+# Jupyter Notebooks #
+#####################
+*-checkpoint.ipynb
+
 # Logs and databases #
 ######################
 *.log
