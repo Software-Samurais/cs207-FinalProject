@@ -68,6 +68,13 @@ def test_AD_pow():
     
     assert y.val == 4.0, y.der == 4.0
     
+def test_AD_check_tol():
+    
+    x = AD.AutoDiff(np.pi/4)
+    y = AD.check_tol(AD.tan(x))
+    
+    assert y.val == 1.0, y.der == 2.0
+    
 def test_AD_sin():
     
     x = AD.AutoDiff(np.pi/2)
