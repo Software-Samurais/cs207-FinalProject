@@ -3,6 +3,7 @@
 *.pyc
 *.aux
 *.pygtex 
+*.coverage
 
 # Logs and databases #
 ######################
