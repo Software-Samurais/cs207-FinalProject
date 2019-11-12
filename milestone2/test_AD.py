@@ -4,6 +4,28 @@ import pytest
 
 import AD
 
+def test_AD_val():
+    
+    x = AD.AutoDiff(1.0)
+    
+    assert x.val == 1.0
+    
+def test_AD_der():
+    
+    x = AD.AutoDiff(1.0)
+    y = AD.AutoDiff(1.0, 0.1)
+    
+    assert x.der == 1.0
+    
+    assert y.der == 0.1
+
+# This test needs to be fixed. Ideally, we should be comparing strings here. 
+def test_AD_repr():
+    
+    x = AD.AutoDiff(1.0)
+    
+    assert print(x) == None
+    
 def test_AD_add():
 
     x = AD.AutoDiff(1.0)
@@ -102,3 +124,11 @@ def test_AD_exp():
     y = AD.exp(x)
     
     assert y._val == np.exp(1.0), y._der == 2.0*np.exp(1.0)
+    
+def test_AD_log():
+    
+    x = AD.AutoDiff(1.0) 
+    y = AD.log(x)
+    
+    assert y._val == np.log(x._val), y._der == 0.0
+
