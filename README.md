@@ -5,7 +5,7 @@
 
 #### Group Number  3
 #### Group Members:
-- Eric Ruiz
+- Erick Ruiz
 - Jingyuan Liu
 - Simon (Xin) Dong
 - Kailas Amin
