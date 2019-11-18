@@ -56,50 +56,42 @@ def test_mul():
     y = 3.0 * x
     u = AD.AutoDiff(2.0, 0.1)
     v = x * u
+    z = u * (3*x)
     assert y._val == 3.0 and y._der == 3.0, "error with mul"
     assert v._val == 2.0 and v._der == 2.1, "error with mul"
+    assert z._val == 6.0 and z._der == 6.3, "error with mul"
 
 def test_rmul():
     x = AD.AutoDiff(1.0)
     y = x * 3.0
     u = AD.AutoDiff(2.0, 0.1)
     v = u * x
-    assert y._val == 3.0 and y._der == 3.0, "error with mul"
-    assert v._val == 2.0 and v._der == 2.1, "error with mul"
-"""
+    z = (u*3) * x
+    assert y._val == 3.0 and y._der == 3.0, "error with rmul"
+    assert v._val == 2.0 and v._der == 2.1, "error with rmul"
+    assert z._val == 6.0 and z._der == 6.3, "error with rmul"
+   
 def test_truediv():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    x3=sol.create_variable(6)
-    f = x2/x1
-    f2 = x2/2
-    f3 = x2/(2*x1)
-    f4 = x2/(x1*x1)
-    assert f.x == 1.25, "error with truediv"
-    assert (f.dx == np.array([-0.3125,  0.25  ,  0.    ])).all(), "error with truediv"
-    assert f2.x == 2.5, "error with truediv"
-    assert (f2.dx == np.array([0. , 0.5, 0. ])).all(), "error with truediv"
-    assert f3.x == 0.625, "error with truediv"
-    assert (f3.dx == np.array([-0.15625,  0.125  ,  0.])).all(), "error with truediv"
-    assert f4.x == 0.3125, "error with truediv"
-    assert (f4.dx == np.array([-0.15625,  0.0625 ,  0.])).all(), "error with truediv"
+    x = AD.AutoDiff(3.0)
+    y = x / 3.0
+    u = AD.AutoDiff(1.0, 0.1)
+    v = u / x
+    z = u / (2 * x)
+    assert y._val == 1.0 and y._der == 1.0/3.0, "error with truediv"
+    assert v._val == 1.0/3.0 and v._der == -0.7/9, "error with truediv"
+    assert z._val == 1.0/(2*3.0) and z._der == -1.4/36, "error with truediv"
+
 
 def test_rtruediv():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    x3=sol.create_variable(6)
-    f = 1/x1
-    f2 = 1/(2*x1)
-    f3 = 7/(x1*x1)
-    assert f.x == 0.25, "error with rtruediv"
-    assert (f.dx == np.array([-0.0625, -0.    , -0.    ])).all(), "error with rtruediv"
-    assert f2.x == 0.125, "error with rtruediv"
-    assert (f2.dx == np.array([-0.03125, -0.     , -0.   ])).all(), "error with rtruediv"
-    assert f3.x == 0.4375, "error with rtruediv"
-    assert (f3.dx == np.array([-0.21875, -0.     , -0.     ])).all(), "error with rtruediv"
-
+    x = AD.AutoDiff(3.0)
+    y = 3.0 / x
+    u = AD.AutoDiff(1.0, 2.0)
+    v = x / u
+    z = (2 * x) / u
+    assert y._val == 1.0 and y._der == -1.0/3.0, "error with truediv"
+    assert v._val == 3.0 and v._der == -5.0, "error with truediv"
+    assert z._val == 6.0 and z._der == -10.0, "error with truediv"
+"""
 def test_pow():
     sol=vt.Solver(2)
     x1=sol.create_variable(4)

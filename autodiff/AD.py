@@ -46,10 +46,18 @@ class AutoDiff():
         
     def __truediv__(self, other):
         try: 
-            return AutoDiff(self._val/other._val, (self._der*other._val - self._val*other._der)/self._der**2)
+            return AutoDiff(self._val/other._val, (self._der*other._val - self._val*other._der)/other._val**2)
         except AttributeError:
             return AutoDiff(self._val/other, self._der/other)
-            
+    
+    def __rtruediv__(self, other):
+        try: 
+            return AutoDiff(self._val/other._val, (other._der*self._val - other._val*self._der)/self._val**2)
+        except AttributeError:
+            return AutoDiff(other/self._val, -other/self._val **2)
+
+
+
     def __pow__(self, n):
         return AutoDiff(self._val**n, n*self._val**(n-1)*self._der)
 
