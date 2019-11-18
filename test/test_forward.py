@@ -78,7 +78,7 @@ def test_truediv():
     v = u / x
     z = u / (2 * x)
     assert y._val == 1.0 and y._der == 1.0/3.0, "error with truediv"
-    assert v._val == 1.0/3.0 and v._der == -0.7/9, "error with truediv"
+    assert v._val == 1.0/3.0 and v._der == -0.7/3.0**2, "error with truediv"
     assert z._val == 1.0/(2*3.0) and z._der == -1.4/36, "error with truediv"
 
 
@@ -100,7 +100,7 @@ def test_pow():
     z = u**2
 
     assert y._val == 8.0 and y._der == 12.0, "error with pow"
-    assert z._val == 9.0 and y._der == 24.0, "error with pow"
+    assert z._val == 9.0 and z._der == 24.0, "error with pow"
 
 """
 def test_exp():
