@@ -128,7 +128,7 @@ def test_log():
     with pytest.raises(ValueError) as e:
         u = AD.AutoDiff(0)
         z = AD.log(u)
-    assert str(e.value) == 'Cannot divide by Zero'
+    assert str(e.value) == 'Cannot divide by zero'
     
 def test_sin():
     x = AD.AutoDiff(np.pi/2)
@@ -150,10 +150,10 @@ def test_tan():
     x = AD.AutoDiff(np.pi/4)
     y = AD.tan(x)
     assert y._val == 1.0 and y._der == 2.0, "error with tan"
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match=r"Cannot divide by zero") as e:
         u = AD.AutoDiff(np.pi/2)
         z = AD.tan(u)
-    assert str(e.value) == 'Cannot divide by Zero'
+    #assert str(e.value) == 'Cannot divide by zero'
 
 
 
