@@ -4,38 +4,34 @@ import math
 import pytest
 
 
-def test_AD_val():
+def test_val():
     x = AD.AutoDiff(1.0)
     assert x.val == 1.0, "error with val"
     
-def test_AD_der():
+def test_der():
     x = AD.AutoDiff(1.0)
     y = AD.AutoDiff(1.0, 0.1)
     assert x.der == 1.0, "error with der"
     assert y.der == 0.1, "error with der"
 
-def test_AD_neg():
+def test_neg():
     x = AD.AutoDiff(1.0, 0.1)
     assert (-x).val == -1, "error with neg"
     assert (-x).der == -0.1, "error with neg"
 
-def test_AD_add():
+def test_add():
     x = AD.AutoDiff(1.0)
     y = x + 3
-
     u = AD.AutoDiff(3.0, 0.1)
     v = x + u
-    
     assert y._val == 4.0 and y._der == 1.0, "error with add"
     assert v._val == 4.0 and v._der == 1.1, "error with add"
 
 def test_radd():
     x = AD.AutoDiff(1.0)
     y = 3 + x
-
     u = AD.AutoDiff(3.0, 0.1)
     v = u + x
-    
     assert y._val == 4.0 and y._der == 1.0, "error with radd"
     assert v._val == 4.0 and v._der == 1.1, "error with radd"
 """
@@ -156,33 +152,5 @@ def test_tan():
     assert f.x == 1.633123935319537e+16, "error with tan"
     assert ((f.dx - np.array([2.66709379e+32, 1.33333333e+00])) < 10**(-8)).sum() == 2, "error with tan"
 
-def test_arcsin():
-    sol=vt.Solver(2)
-    x1=sol.create_variable(0.5)
-    x2=sol.create_variable(0.1)
-    f = np.arcsin(x1) + np.arcsin(x2)
-    assert abs(f.x - 0.6237661967598587)<1e-8, "error with arcsin"
-    assert ((f.dx - np.array([1.15470054, 1.00503782])) < 10**(-8)).sum() == 2, "error with arcsin"
 
-def test_arccos():
-    sol=vt.Solver(2)
-    x1=sol.create_variable(0.5)
-    x2=sol.create_variable(0.1)
-    f = np.arccos(x1) + np.arccos(x2)
-    assert abs(f.x - 2.5178264568299342)<1e-8, "error with arccos"
-    assert ((f.dx - np.array([-1.15470054, -1.00503782])) < 10**(-8)).sum() == 2, "error with arccos"
-
-def test_arctan():
-    sol=vt.Solver(2)
-    x1=sol.create_variable(0.5)
-    x2=sol.create_variable(0.1)
-    f = np.arctan(x1) + np.arctan(x2)
-    assert abs(f.x - 0.5633162614919682)<1e-8, "error with arctan"
-    assert ((f.dx - np.array([0.8, 0.99009901])) < 10**(-8)).sum() == 2, "error with arctan"
-
-def test_over_create():
-    sol=vt.Solver(1)
-    x1=sol.create_variable(1)
-    with pytest.raises(Exception):
-        x2=sol.create_variable(2)
 """
