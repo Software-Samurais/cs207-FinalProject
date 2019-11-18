@@ -34,43 +34,39 @@ def test_radd():
     v = u + x
     assert y._val == 4.0 and y._der == 1.0, "error with radd"
     assert v._val == 4.0 and v._der == 1.1, "error with radd"
-"""
+
 def test_sub():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    x3=sol.create_variable(6)
-    f = x1-x2-3
-    assert f.x == -4, "error with sub"
-    assert (f.dx == np.array([1,-1,0])).all(), "error with sub"
+    x = AD.AutoDiff(1.0)
+    y = x - 3
+    u = AD.AutoDiff(3.0, 0.1)
+    v = x - u
+    assert y._val == -2.0 and y._der == 1.0, "error with sub"
+    assert v._val == -2.0 and v._der == 0.9, "error with sub"
 
 def test_rsub():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    x3=sol.create_variable(6)
-    f = 11-x1-x3
-    assert f.x == 1, "error with rsub"
-    assert (f.dx == np.array([-1,0,-1])).all(), "error with rsub"
+    x = AD.AutoDiff(1.0)
+    y = 3 - x
+    u = AD.AutoDiff(3.0, 0.1)
+    v = u - x
+    assert y._val == 2.0 and y._der == -1.0, "error with rsub"
+    assert v._val == 2.0 and v._der == -0.9, "error with rsub"
 
 def test_mul():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    x3=sol.create_variable(6)
-    f = x1*x2*x3*2
-    assert f.x == 240, "error with mul"
-    assert (f.dx == np.array([60., 48., 40.])).all(), "error with mul"
+    x = AD.AutoDiff(1.0)
+    y = 3.0 * x
+    u = AD.AutoDiff(2.0, 0.1)
+    v = x * u
+    assert y._val == 3.0 and y._der == 3.0, "error with mul"
+    assert v._val == 2.0 and v._der == 2.1, "error with mul"
 
 def test_rmul():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    x3=sol.create_variable(6)
-    f = 2*x1*x2*x3
-    assert f.x == 240, "error with rmul"
-    assert (f.dx == np.array([60., 48., 40.])).all(), "error with rmul"
-
+    x = AD.AutoDiff(1.0)
+    y = x * 3.0
+    u = AD.AutoDiff(2.0, 0.1)
+    v = u * x
+    assert y._val == 3.0 and y._der == 3.0, "error with mul"
+    assert v._val == 2.0 and v._der == 2.1, "error with mul"
+"""
 def test_truediv():
     sol=vt.Solver(3)
     x1=sol.create_variable(4)
