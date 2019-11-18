@@ -88,18 +88,21 @@ def test_rtruediv():
     u = AD.AutoDiff(1.0, 2.0)
     v = x / u
     z = (2 * x) / u
-    assert y._val == 1.0 and y._der == -1.0/3.0, "error with truediv"
-    assert v._val == 3.0 and v._der == -5.0, "error with truediv"
-    assert z._val == 6.0 and z._der == -10.0, "error with truediv"
-"""
-def test_pow():
-    sol=vt.Solver(2)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    f = (x1+x2) ** 2
-    assert f.x == 81, "error with pow"
-    assert (f.dx == np.array([18., 18.])).all(), "error with pow"
+    assert y._val == 1.0 and y._der == -1.0/3.0, "error with rtruediv"
+    assert v._val == 3.0 and v._der == -5.0, "error with rtruediv"
+    assert z._val == 6.0 and z._der == -10.0, "error with rtruediv"
 
+
+def test_pow():
+    x = AD.AutoDiff(2.0)
+    y = x**3
+    u = AD.AutoDiff(3.0, 4.0)
+    z = u**2
+
+    assert y._val == 8.0 and y._der == 12.0, "error with pow"
+    assert z._val == 9.0 and y._der == 24.0, "error with pow"
+
+"""
 def test_exp():
     sol=vt.Solver(2)
     x1=sol.create_variable(0)

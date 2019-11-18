@@ -56,10 +56,8 @@ class AutoDiff():
         except AttributeError:
             return AutoDiff(other/self._val, -other/self._val **2)
 
-
-
     def __pow__(self, n):
-        return AutoDiff(self._val**n, n*self._val**(n-1)*self._der)
+        return AutoDiff(self._val**n, n*(self._val**(n-1))*self._der)
 
 def check_tol(x, tol=1e-8):
     
