@@ -84,7 +84,7 @@ def tan(x):
     if np.cos(x._val) != 0:
         return check_tol(AutoDiff(np.tan(x._val), np.cos(x._val)**(-2)*x._der))
     else:
-        raise ValueError("Divide by zero encountered.")
+        raise ValueError('Cannot divide by Zero')
     
 def exp(x):
     return check_tol(AutoDiff(np.exp(x._val), np.exp(x._val)*x._der))
@@ -93,4 +93,4 @@ def log(x):
     if x._val != 0:
         return check_tol(AutoDiff(np.log(x._val), x._der/x._val))
     else:
-        raise ValueError("Divide by zero encountered.")
+        raise ValueError('Cannot divide by Zero')
