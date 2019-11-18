@@ -16,6 +16,9 @@ class AutoDiff():
         
     def __repr__(self):
         return f"Function value: {self._val}, Derivative value: {self._der}"
+
+    def  __neg__(self):
+        return AutoDiff(-self._val, -self._der)
         
     def __add__(self, other):
         try:
@@ -24,22 +27,13 @@ class AutoDiff():
             return AutoDiff(self._val + other, self._der)
         
     def __radd__(self, other):
-        try: 
-            return AutoDiff(self._val + other._val, self._der + other._der)
-        except AttributeError:
-            return AutoDiff(self._val + other, self._der)
+        return self.__add__(other)
             
     def __sub__(self, other):
-        try:
-            return AutoDiff(self._val - other._val, self._der - other._der)
-        except AttributeError:
-            return AutoDiff(self._val - other, self._der)
+        return self.__add__(-other)
             
     def __rsub__(self, other):
-        try:
-            return AutoDiff(other._val - self._val, other._der - self._der)
-        except AttributeError:
-            return AutoDiff(other - self._val, self._der)
+         return -self.__sub__(other)
             
     def __mul__(self, other):
         try:
@@ -48,10 +42,7 @@ class AutoDiff():
             return AutoDiff(other*self._val, other*self._der)
             
     def __rmul__(self, other):
-        try:
-            return AutoDiff(self._val*other._val, self._der*other._val + self._val*other._der)
-        except AttributeError:
-            return AutoDiff(other*self._val, other*self._der)
+        return self.__mul__(other)
         
     def __truediv__(self, other):
         try: 

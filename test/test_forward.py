@@ -1,32 +1,44 @@
-mport veritorch.veritorch as vt
+import autodiff.AD as AD
 import numpy as np
 import math
 import pytest
 
-def test_neg():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    assert (-x1).x == -4, "error with neg"
-    assert ((-x1).dx == np.array([-1,0,0])).all(), "error with neg"
 
-def test_add():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    x3=sol.create_variable(6)
-    f = x1+x2+x3
-    assert f.x == 15, "error with add"
-    assert (f.dx == np.array([1,1,1])).all(), "error with add"
+def test_AD_val():
+    x = AD.AutoDiff(1.0)
+    assert x.val == 1.0, "error with val"
+    
+def test_AD_der():
+    x = AD.AutoDiff(1.0)
+    y = AD.AutoDiff(1.0, 0.1)
+    assert x.der == 1.0, "error with der"
+    assert y.der == 0.1, "error with der"
+
+def test_AD_neg():
+    x = AD.AutoDiff(1.0, 0.1)
+    assert (-x).val == -1, "error with neg"
+    assert (-x).der == -0.1, "error with neg"
+
+def test_AD_add():
+    x = AD.AutoDiff(1.0)
+    y = x + 3
+
+    u = AD.AutoDiff(3.0, 0.1)
+    v = x + u
+    
+    assert y._val == 4.0 and y._der == 1.0, "error with add"
+    assert v._val == 4.0 and v._der == 1.1, "error with add"
 
 def test_radd():
-    sol=vt.Solver(3)
-    x1=sol.create_variable(4)
-    x2=sol.create_variable(5)
-    x3=sol.create_variable(6)
-    f = 4+x2+x3
-    assert f.x == 15, "error with radd"
-    assert (f.dx == np.array([0,1,1])).all(), "error with radd"
+    x = AD.AutoDiff(1.0)
+    y = 3 + x
 
+    u = AD.AutoDiff(3.0, 0.1)
+    v = u + x
+    
+    assert y._val == 4.0 and y._der == 1.0, "error with radd"
+    assert v._val == 4.0 and v._der == 1.1, "error with radd"
+"""
 def test_sub():
     sol=vt.Solver(3)
     x1=sol.create_variable(4)
@@ -173,4 +185,4 @@ def test_over_create():
     x1=sol.create_variable(1)
     with pytest.raises(Exception):
         x2=sol.create_variable(2)
-
+"""
