@@ -14,6 +14,14 @@ class AutoDiff():
     def der(self):
         return self._der
         
+    @val.setter
+    def val(self, a):
+        self._val = a
+        
+    @der.setter
+    def der(self, da):
+        self._der = da
+        
     def __repr__(self):
         return f"Function value: {self._val}, Derivative value: {self._der}"
 

@@ -13,6 +13,16 @@ def test_der():
     y = AD.AutoDiff(1.0, 0.1)
     assert x.der == 1.0, "error with der"
     assert y.der == 0.1, "error with der"
+    
+def test_val_set():
+    x = AD.AutoDiff(1.0)
+    x.val = 2.0
+    assert x.val == 2.0, "error with val setter"
+    
+def test_der_set():
+    x = AD.AutoDiff(1.0)
+    x.der = 2.0
+    assert x.der == 2.0, "error with der setter"
 
 def test_AD_repr():
     x = AD.AutoDiff(1.0)
@@ -153,7 +163,7 @@ def test_tan():
     with pytest.raises(ValueError, match=r"Cannot divide by zero") as e:
         u = AD.AutoDiff(np.pi/2)
         z = AD.tan(u)
-    #assert str(e.value) == 'Cannot divide by zero'
+    assert str(e.value) == 'Cannot divide by zero'
 
 
 
