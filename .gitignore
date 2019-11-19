@@ -126,3 +126,17 @@ venv.bak/
 # Pyre type checker
 .pyre/
 
+# Compiled source #
+###################
+*.pyc
+*.aux
+*.pygtex 
+*.coverage
+
+# Jupyter Notebooks #
+#####################
+*-checkpoint.ipynb
+
+# Logs and databases #
+######################
+*.log
