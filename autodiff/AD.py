@@ -1,7 +1,8 @@
 import numpy as np
 
 class AutoDiff():
-    
+    """Scalar automatic differentiation variable.
+    """
     def __init__(self, a, da=1.0):
         self._val = a
         self._der = da
