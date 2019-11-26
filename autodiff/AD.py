@@ -39,26 +39,10 @@ class AutoDiff():
         
     @val.setter
     def val(self, a):
-        """Sets the function value of a scalar forward mode variable.
-        
-        Args:
-        - a (float): New function value
-        
-        Returns:
-        - None
-        """
         self._val = a
         
     @der.setter
     def der(self, da):
-        """Sets the derivative value of a scalar forward mode variable.
-        
-        Args:
-        - da (float): New derivative value
-        
-        Returns:
-        - None
-        """
         self._der = da
         
     def __repr__(self):
