@@ -218,3 +218,33 @@ def test_tan():
     assert isinstance(y, ad.Node)
     assert np.array_equal(y_val, np.tan(x2_val))
     assert np.array_equal(grad_x2_val, 1./np.cos(x2_val)**2)
+
+def test_arctan():
+    # this can test tan, cos, sin and power at the same time
+    x2 = ad.Variable(name = "x2")
+    y = ad.arctan_op(x2)
+
+    grad_x2, = ad.gradients(y, [x2])
+
+    executor = ad.Executor([y, grad_x2])
+    x2_val = 0.5 * np.ones(3)
+    y_val, grad_x2_val= executor.run(feed_dict = {x2 : x2_val})
+
+    assert isinstance(y, ad.Node)
+    assert np.array_equal(y_val, np.arctan(x2_val))
+    assert np.array_equal(grad_x2_val, 1./(x2_val**2+1))
+
+def test_arccos():
+    # this can test tan, cos, sin and power at the same time
+    x2 = ad.Variable(name = "x2")
+    y = ad.arccos_op(x2)
+
+    grad_x2, = ad.gradients(y, [x2])
+
+    executor = ad.Executor([y, grad_x2])
+    x2_val = 0.5 * np.ones(3)
+    y_val, grad_x2_val= executor.run(feed_dict = {x2 : x2_val})
+
+    assert isinstance(y, ad.Node)
+    assert np.array_equal(y_val, np.arccos(x2_val))
+    assert ((grad_x2_val -1./(1-x2_val**2)**0.5)<1e-7 ).all()

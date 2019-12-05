@@ -43,15 +43,20 @@ class Node(object):
             new_node = -add_byconst_op(self, -other)
         return new_node
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         if isinstance(other, Node):
             new_node = mul_op(self, other**(-1))
         else: 
             new_node = mul_byconst_op(self, 1./other)
         return new_node
     
-    def __rdiv__(self, other):
-        return (self/other)**(-1)
+    def __rtruediv__(self, other):
+        if isinstance(other, Node):
+            new_node = mul_op(self, other**-1)**-1
+        else: 
+            new_node = mul_byconst_op(self, 1./other)**-1
+        return new_node
+
 
     def __pow__(self, other): 
         assert not isinstance(other, Node)
@@ -304,10 +309,11 @@ class ArcSinOp(Op):
 
     def compute(self, node, input_vals):
         assert len(input_vals) == 1
-        return np.sin(input_vals[0])
+        assert (input_vals[0]>-1).all() and (input_vals[0]<1).all(), 'input of arcsin must in (-1,1)'
+        return np.arcsin(input_vals[0])
 
     def gradient(self, node, output_grad):
-        return [output_grad * cos_op(node.inputs[0])]
+        return [output_grad * ((1-node.inputs[0]**2)**-0.5)]
 
 class ArcCosOp(Op):
     def __call__(self, node_A):
@@ -318,10 +324,11 @@ class ArcCosOp(Op):
 
     def compute(self, node, input_vals):
         assert len(input_vals) == 1
-        return np.cos(input_vals[0])
+        assert (input_vals[0]>-1).all() and (input_vals[0]<1).all(), 'input of arccos must in (-1,1)'
+        return np.arccos(input_vals[0])
 
     def gradient(self, node, output_grad):
-        return [-sin_op(node.inputs[0]) * output_grad]
+        return [-output_grad * ((1-node.inputs[0]**2)**-0.5)]
 
 class ArcTanOp(Op):
     def __call__(self, node_A):
@@ -332,10 +339,10 @@ class ArcTanOp(Op):
 
     def compute(self, node, input_vals):
         assert len(input_vals) == 1
-        return np.sin(input_vals[0])/np.cos(input_vals[0])
+        return np.arctan(input_vals[0])
 
     def gradient(self, node, output_grad):
-        return [output_grad*(cos_op(node.inputs[0])**-2)]
+        return [output_grad/(1 + node.inputs[0]**2)]
 
 class PowerOp(Op):
     """Op to element-wise do power of a node."""
@@ -422,6 +429,9 @@ matmul_op = MatMulOp()
 cos_op = CosOp()
 sin_op = SinOp()
 tan_op = TanOp()
+arccos_op = ArcCosOp()
+arcsin_op = ArcSinOp()
+arctan_op = ArcTanOp()
 power_op = PowerOp()
 placeholder_op = PlaceholderOp()
 oneslike_op = OnesLikeOp()
