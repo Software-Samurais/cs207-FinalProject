@@ -13,7 +13,13 @@ class Forward:
             self._der = np.asarray(da).astype(float)
         
     def __repr__(self):
-        return f"Function value: {self._val}\nDerivative value: {self._der}"
+        try:
+            if self._val.shape != self._der.shape:
+                return f"Value:\n{self._val}\nJacobian:\n{self._der}"
+            else:
+                return f"Value:\n{self._val}\nDerivative:\n{self._der}"
+        except AttributeError:
+            return f"Value:\n{self._val}\nDerivative:\n{self._der}"            
     
     @property
     def val(self):
@@ -121,11 +127,18 @@ def check_tol(x, tol=1e-8):
         if abs(x._der - np.round(x._der)) < tol:
             x._der = np.round(x._der)
     except ValueError:
-        for k in range(len(x._val)):
-            if abs(x._val[k] - np.round(x._val[k])) < tol:
-                x._val[k] = np.round(x._val[k])
-            if abs(x._der[k] - np.round(x._der[k])) < tol:
-                x._der[k] = np.round(x._der[k])
+        for k in range(x._val.size):
+            try:
+                if abs(x._val[k] - np.round(x._val[k])) < tol:
+                    x._val[k] = np.round(x._val[k])
+            except IndexError:
+                pass
+            
+            try:
+                if abs(x._der[k] - np.round(x._der[k])) < tol:
+                    x._der[k] = np.round(x._der[k])
+            except IndexError:
+                pass
 
     return x
 
