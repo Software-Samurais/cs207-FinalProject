@@ -168,10 +168,13 @@ class MulByConstOp(Op):
     def compute(self, node, input_vals):
         """Given values of input node, return result of element-wise multiplication."""
         """TODO: Your code here"""
+        assert len(input_vals) == 1
+        return input_vals[0] * node.const_attr
 
     def gradient(self, node, output_grad):
         """Given gradient of multiplication node, return gradient contribution to input."""
         """TODO: Your code here"""
+        return [output_grad * node.const_attr]
 
 class MatMulOp(Op):
     """Op to matrix multiply two nodes."""
@@ -199,6 +202,10 @@ class MatMulOp(Op):
     def compute(self, node, input_vals):
         """Given values of input nodes, return result of matrix multiplication."""
         """TODO: Your code here"""
+        assert len(input_vals) == 2
+        inp_A = input_vals[0].transpose() if node.matmul_attr_trans_A else input_vals[0]
+        inp_B = input_vals[1].transpose() if node.matmul_attr_trans_B else input_vals[1]
+        return np.matmul(inp_A, inp_B)
 
     def gradient(self, node, output_grad):
         """Given gradient of multiply node, return gradient contributions to each input.
@@ -206,6 +213,8 @@ class MatMulOp(Op):
         Useful formula: if Y=AB, then dA=dY B^T, dB=A^T dY
         """
         """TODO: Your code here"""
+        return [matmul_op(output_grad   , node.inputs[1], False, True), \
+                matmul_op(node.inputs[0], output_grad   , True , False)]
 
 class PlaceholderOp(Op):
     """Op to feed value to a nodes."""
@@ -346,7 +355,7 @@ def gradients(output_node, node_list):
         print(_idx, node)
         print('op', node.op)
         print('grad list', node_to_output_grads_list[node])
-        grad = ad.sum_node_list(node_to_output_grads_list[node])
+        grad = sum_node_list(node_to_output_grads_list[node])
         node_to_output_grad[node] = grad
         input_grads = node.op.gradient(node, grad)
         
