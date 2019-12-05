@@ -294,6 +294,48 @@ class TanOp(Op):
     def gradient(self, node, output_grad):
         return [output_grad*(cos_op(node.inputs[0])**-2)]
 
+class ArcSinOp(Op):
+
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "arcsin(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.sin(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [output_grad * cos_op(node.inputs[0])]
+
+class ArcCosOp(Op):
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "arccos(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.cos(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [-sin_op(node.inputs[0]) * output_grad]
+
+class ArcTanOp(Op):
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "arctan(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.sin(input_vals[0])/np.cos(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [output_grad*(cos_op(node.inputs[0])**-2)]
 
 class PowerOp(Op):
     """Op to element-wise do power of a node."""
