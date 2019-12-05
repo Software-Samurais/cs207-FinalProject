@@ -29,6 +29,37 @@ class Node(object):
             new_node = add_byconst_op(self, other)
         return new_node
 
+    def __sub__(self, other):
+        if isinstance(other, Node):
+            new_node = add_op(self, -other)
+        else:
+            new_node = add_byconst_op(self, -other)
+        return new_node
+
+    def __rsub__(self, other):
+        if isinstance(other, Node):
+            new_node = -add_op(self, -other)
+        else:
+            new_node = -add_byconst_op(self, -other)
+        return new_node
+
+    def __div__(self, other):
+        if isinstance(other, Node):
+            new_node = mul_op(self, other**(-1))
+        else: 
+            new_node = mul_byconst_op(self, 1./other)
+        return new_node
+    
+    def __rdiv__(self, other):
+        return (self/other)**(-1)
+
+    def __pow__(self, other): 
+        assert not isinstance(other, Node)
+        return power_op(self, other)
+
+    def __neg__(self):
+        return mul_byconst_op(self, -1)
+
     def __mul__(self, other):
         if isinstance(other, Node):
             new_node = mul_op(self, other)
@@ -137,6 +168,7 @@ class AddByConstOp(Op):
         """Given gradient of add node, return gradient contribution to input."""
         return [output_grad]
 
+
 class MulOp(Op):
     """Op to element-wise multiply two nodes."""
     def __call__(self, node_A, node_B):
@@ -216,6 +248,72 @@ class MatMulOp(Op):
         return [matmul_op(output_grad   , node.inputs[1], False, True), \
                 matmul_op(node.inputs[0], output_grad   , True , False)]
 
+
+class SinOp(Op):
+    """Op to element-wise sin of node."""
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "sin(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.sin(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [output_grad * cos_op(node.inputs[0])]
+
+class CosOp(Op):
+    """Op to element-wise cos of node."""
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "cos(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.cos(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [-sin_op(node.inputs[0]) * output_grad]
+
+class TanOp(Op):
+    """Op to element-wise cos of node."""
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "tan(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.sin(input_vals[0])/np.cos(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [output_grad*(cos_op(node.inputs[0])**-2)]
+
+
+class PowerOp(Op):
+    """Op to element-wise do power of a node."""
+    def __call__(self, node_A, const_val):
+        new_node = Op.__call__(self)
+        new_node.const_attr = const_val
+        new_node.inputs = [node_A]
+        new_node.name = "%s**%s" % (node_A.name, str(const_val))
+        return new_node
+
+    def compute(self, node, input_vals):
+        """Given values of input node, return result of element-wise addition."""
+        assert len(input_vals) == 1
+        return input_vals[0]**node.const_attr
+
+    def gradient(self, node, output_grad):
+        """Given gradient of add node, return gradient contribution to input."""
+        return [output_grad * \
+                (node.const_attr * (node.inputs[0]**(node.const_attr-1)))]
+
 class PlaceholderOp(Op):
     """Op to feed value to a nodes."""
     def __call__(self):
@@ -279,6 +377,10 @@ mul_op = MulOp()
 add_byconst_op = AddByConstOp()
 mul_byconst_op = MulByConstOp()
 matmul_op = MatMulOp()
+cos_op = CosOp()
+sin_op = SinOp()
+tan_op = TanOp()
+power_op = PowerOp()
 placeholder_op = PlaceholderOp()
 oneslike_op = OnesLikeOp()
 zeroslike_op = ZerosLikeOp()
