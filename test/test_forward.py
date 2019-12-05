@@ -30,7 +30,7 @@ def test_der_set():
 
 def test_AD_repr():
     x = AD.Forward(1.0)
-    assert repr(x) == 'Function value: 1.0\nDerivative value: 1.0'
+    assert repr(x) == 'Value:\n1.0\nDerivative:\n1.0'
 
 def test_neg():
     x = AD.Forward(1.0, 0.1)
