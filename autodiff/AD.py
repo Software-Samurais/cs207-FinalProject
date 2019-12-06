@@ -3,6 +3,8 @@ import numpy as np
 class Forward:
     
     def __init__(self, a, da=None):
+        #Old __init__ method
+        """
         self._val = np.asarray(a).astype(float)
         if da is None:     
             if self._val.size == 1:
@@ -11,15 +13,61 @@ class Forward:
                 self._der = np.ones(self._val.size)
         else:
             self._der = np.asarray(da).astype(float)
+        """
+        # New constructor
+        # NOTE: This makes many of the unit tests fail!
+        if type(a) is float or type(a) is int:
+            
+            # Simple scalar variables
+            self._val = float(a)
+            if da is None:
+                self._der = 1.0
+            else:
+                self._der = float(da)
+                
+        # Variables with array-like inputs
+        if type(a) is list or type(a) is np.ndarray:
+            
+            self._val = np.asarray(a)
+            
+            # Vector functions
+            if isinstance(self._val.any(), Forward):
+                
+                vals = []
+                jac = []
+                
+                for element in self._val:
+                    vals.append(element._val)
+                    jac.append(element._der)
+                
+                self._val = np.asarray(vals).astype(float).flatten()
+                self._der = np.asarray(jac).astype(float)
+                
+            else:
+                if da is None:     
+                    self._der = np.ones(self._val.size)
+                else:
+                    self._der = np.asarray(da).astype(float)
+       
         
     def __repr__(self):
+    
         try:
+            # For vector functions
             if self._val.shape != self._der.shape:
-                return f"Value:\n{self._val}\nJacobian:\n{self._der}"
+                try:
+                    n, m = self._der.shape
+                    return f"Function:\n{self._val}\nJacobian:\n{self._der}"
+                except ValueError:
+                    return f"Function:\n{self._val}\nGradient:\n{self._der}"
+            
+            # For scalar functions using arrays
             else:
-                return f"Value:\n{self._val}\nDerivative:\n{self._der}"
+                return f"Function values:\n{self._val}\nDerivative values:\n{self._der}"
+        
+        # Simple scalar variables
         except AttributeError:
-            return f"Value:\n{self._val}\nDerivative:\n{self._der}"            
+            return f"Function value:\n{self._val}\nDerivative value:\n{self._der}"            
     
     @property
     def val(self):
@@ -97,7 +145,7 @@ class Forward:
             
     def __ne__(self, other):
         return not self.__eq__(other)
-        
+
 def check_tol(x, tol=1e-8):
     """Returns rounded function and/or derivative values.
     
