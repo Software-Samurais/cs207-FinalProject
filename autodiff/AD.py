@@ -31,14 +31,20 @@ class Forward:
             self._val = np.asarray(a)
             
             # Vector functions
+            # NOTE: This works well for most cases, except those where a 
+            # component is independent of x, y, or z.
             if isinstance(self._val.any(), Forward):
                 
                 vals = []
                 jac = []
                 
                 for element in self._val:
-                    vals.append(element._val)
-                    jac.append(element._der)
+                    try:
+                        vals.append(element._val)
+                        jac.append(element._der)
+                    except AttributeError:
+                        vals.append(element)
+                        jac.append(np.zeros(len(a)))
                 
                 self._val = np.asarray(vals).astype(float).flatten()
                 self._der = np.asarray(jac).astype(float)
