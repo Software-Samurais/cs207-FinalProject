@@ -28,10 +28,21 @@ def test_der_set():
     x.der = 2.0
     assert x.der == 2.0, "error with der setter"
 
-def test_AD_repr():
+def test__repr__():
+    
+    # Simple scalar variable
     x = AD.Forward(1.0)
-    assert repr(x) == 'Value:\n1.0\nDerivative:\n1.0'
-
+    assert repr(x) == 'Function value:\n1.0\nDerivative value:\n1.0'
+    
+    # Scalar variable with array inputs
+    x = np.linspace(0, 1, 10)
+    y = AD.Forward(x)
+    assert repr(y) == f"Function values:\n{x}\nDerivative values:\n{np.ones(x.size)}"
+    
+    # TODO: Vector variables
+    # x = AD.Forward([1, 2, 3], [1, 0, 0])
+    # y = AD.Forward([4, 5, 6], [0, 1, 0])
+    
 def test_neg():
     x = AD.Forward(1.0, 0.1)
     assert (-x).val == -1, "error with neg"
@@ -140,7 +151,7 @@ def test_ne():
 
 def test_AD_check_tol():
     x = AD.Forward(np.pi/4)
-    y = AD.check_tol(AD.tan(x))
+    y = AD.tan(x)
     assert y._val == 1.0 and y._der == 2.0, "error with check_tol"
     z = np.linspace(0, 1, 100)
     u = AD.Forward(z)
