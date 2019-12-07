@@ -131,8 +131,12 @@ class Var:
         except AttributeError:
             return Var(other/self._val, -other*self._der/self._val**2)
     
-    def __pow__(self, n):
-        return Var(self._val**n, n*self._val**(n-1)*self._der)
+    def __pow__(self, p):
+        try:
+            return Var([self._val**p._val], [p._val*self._val**(p._val-1) * self._der, np.log(self._val) * self._val ** p._val * p._der])
+        except AttributeError:
+            return Var(self._val ** p, p * self._val ** (p - 1) * self._der)
+
             
     # Comparison operators
     # ====================
@@ -212,7 +216,7 @@ def sin(x):
     - (Var): Sine value and the corresponding derivative value; `check_tol`
       is called to remove rounding errors
     """
-    return check_tol(Var(np.sin(x._val), np.cos(x._val)*x._der))
+    return Var(np.sin(x._val), np.cos(x._val)*x._der)
 
 def cos(x):
     """Returns the cosine of a scalar Var mode variable and its derivative.
@@ -224,7 +228,7 @@ def cos(x):
     - (Var): Cosine value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    return check_tol(Var(np.cos(x._val), -np.sin(x._val)*x._der))
+    return Var(np.cos(x._val), -np.sin(x._val)*x._der)
     
 def tan(x):
     """Returns the tangent of a scalar Var mode variable and its derivative.
@@ -237,7 +241,7 @@ def tan(x):
       `check_tol` is called to remove rounding errors
     """
     if cos(x)._val != 0:
-        return check_tol(Var(np.tan(x._val), np.cos(x._val)**(-2)*x._der))
+        return Var(np.tan(x._val), np.cos(x._val)**(-2)*x._der)
     else:
         raise ValueError("Cannot divide by zero")
 
@@ -246,25 +250,25 @@ def tan(x):
      
 def arcsin(x):
     if abs(1-x._val**2) > 1e-8:
-        return check_tol(Var(np.arcsin(x._val), x._der/np.sqrt(1-x._val**2)))
+        return Var(np.arcsin(x._val), x._der/np.sqrt(1-x._val**2))
     else:
         raise ValueError("Cannot divide by zero")
         
 def arccos(x):
     if abs(1-x._val**2) > 1e-8:
-        return check_tol(Var(np.arccos(x._val), -x._der/np.sqrt(1-x._val**2)))
+        return Var(np.arccos(x._val), -x._der/np.sqrt(1-x._val**2))
     else:
         raise ValueError("Cannot divide by zero")
         
 def arctan(x):
-    return check_tol(Var(np.arctan(x._val), x._der/(1+x._val**2)))
+    return Var(np.arctan(x._val), x._der/(1+x._val**2))
     
 # Exponentials
 # ============
 # NOTE: The natural base is treated as a special case. All others are handled 
 # via operator overloading of the power method. 
 
-def exp(x):
+def exp(x, base=None):
     """Returns the exponential of a Var mode variable and its derivative.
     
     Args: 
@@ -274,12 +278,15 @@ def exp(x):
     - (Var): Exponential value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    return check_tol(Var(np.exp(x._val), np.exp(x._val)*x._der))
+    if base is None:
+        return Var(np.exp(x._val), np.exp(x._val)*x._der)
+    else:
+        return Var(np.power(base, x._val), np.power(base, x._val)*np.log(base))
 
 # Logarithms
 # ==========
  
-def log(x):
+def log(x, base=None):
     """Returns the logarithm of a Var mode variable and its derivative.
     
     Args: 
@@ -289,12 +296,14 @@ def log(x):
     - (Var): Logarithm value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    if x._val != 0:
-        return check_tol(Var(np.log(x._val), x._der/x._val))
+    if (type(x._val) is float or type(x._val) is int and x._val != 0) or x._val.all() != 0:
+        if base is None:
+            return Var(np.log(x._val), x._der/x._val)
+        else:
+            return Var(np.log(x._val)/np.log(base), 1/(x._val*np.log(base)))
     else:
         raise ValueError("Cannot divide by zero")
         
-# TODO: Log base n
         
 # Hyperbolic functions
 # ====================
@@ -313,7 +322,7 @@ def tanh(x):
 
 def sqrt(x):
     if x._val > 0:
-        return check_tol(Var(np.sqrt(x._val), -x._der/(2*np.sqrt(x._val))))
+        return Var(np.sqrt(x._val), -x._der/(2*np.sqrt(x._val)))
     else:
         raise ValueError("Invalid domain")
         

@@ -186,6 +186,10 @@ def test_pow():
     assert y._val == 8.0 and y._der == 12.0, "error with pow"
     assert z._val == 9.0 and z._der == 24.0, "error with pow"
     assert w._val == 16.0 and w._der == 16.0, "error with pow"
+    x = AD.Var(5)
+    y = AD.Var(3)
+    z = x**y
+    assert np.array_equal(z._val, [125]) and np.array_equal(z._der, [75, np.log(5) *(5**3)]), "error with pow"
     
 def test_eq():
     x = AD.Var(1.0)
@@ -314,5 +318,4 @@ def test_logistic():
     x = AD.Var(1.0)
     y = AD.logistic(x)
     assert y._val == 1/(1+np.exp(-1.0)) and y._der == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
-
 """
