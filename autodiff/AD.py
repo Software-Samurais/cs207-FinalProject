@@ -26,7 +26,6 @@ class Var:
                 
         # Variables with array-like inputs
         if type(a) is list or type(a) is np.ndarray:
-            
             self._val = np.asarray(a)
             
             # Vector functions
@@ -56,7 +55,6 @@ class Var:
        
         
     def __repr__(self):
-    
         try:
             # For vector functions
             if self._val.shape != self._der.shape:
@@ -133,18 +131,22 @@ class Var:
     
     def __pow__(self, n):
         return Var(self._val**n, n*self._val**(n-1)*self._der)
-        
-    # TODO: __rpow__
-    
+            
     # Comparison operators
     # ====================
     
     def __eq__(self, other):
         try:
-            if self.val == other.val and self.der == other.der:
-                return True
+            if isinstance(self.val, float) and isinstance(other.val, float):
+                if self.val == other.val and self.der == other.der:
+                    return True
+                else:
+                    return False
             else:
-                return False
+                if np.array_equal(self.val, other.val) and np.array_equal(self.der, other.der):
+                    return True
+                else:
+                    return False
         except AttributeError:
             raise TypeError("Cannot compare objects of different types")
             

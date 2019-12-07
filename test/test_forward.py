@@ -66,10 +66,7 @@ def test__repr__():
     assert repr(f) == f"Function values:\n{f.val}\nGradient:\n{f.der}"
     g = AD.Var([x, y ** 2, z ** 4])
     assert repr(g) == f"Function values:\n{g.val}\nJacobian:\n{g.der}"
-
     
-  
-"""   
 def test_neg():
     x = AD.Var(1.0, 0.1)
     assert (-x).val == -1, "error with neg"
@@ -90,7 +87,7 @@ def test_radd():
     v = u + x
     assert y._val == 4.0 and y._der == 1.0, "error with radd"
     assert v._val == 4.0 and v._der == 1.1, "error with radd"
-
+ 
 def test_sub():
     x = AD.Var(1.0)
     y = x - 3
@@ -164,10 +161,13 @@ def test_eq():
     x = AD.Var(1.0)
     assert x.__eq__(AD.Var(1.0)) == True, "error with eq"
     assert x.__eq__(AD.Var(2.0)) == False, "error with eq"
+    x = AD.Var([1, 2], [1, 0, 0])
+    y = AD.Var([1, 2], [1, 0, 0])
     with pytest.raises(TypeError) as e:
         x.__eq__(1.0)
     assert str(e.value) == "Cannot compare objects of different types"
-    
+    assert x == y, "error with eq"
+        
 def test_ne():
     x = AD.Var(1.0)
     assert x.__ne__(AD.Var(2.0)) == True, "error with ne"
@@ -175,7 +175,10 @@ def test_ne():
     with pytest.raises(TypeError) as e:
         x.__ne__(1.3)
     assert str(e.value) == "Cannot compare objects of different types"
-
+    y = AD.Var([1, 2], [1, 0, 0])
+    z = AD.Var([1, 2], [0, 1, 0])
+    assert y != z, "error with eq"
+"""
 def test_AD_check_tol():
     x = AD.Var(np.pi/4)
     y = AD.tan(x)
@@ -184,6 +187,7 @@ def test_AD_check_tol():
     u = AD.Var(z)
     v = AD.sin(u)
     assert np.array_equal(v._val, np.sin(z)) and np.array_equal(v._der, np.cos(z)), "error with check_tol"
+    
 
 def test_exp():
     x = AD.Var(1.0, 2.0)
