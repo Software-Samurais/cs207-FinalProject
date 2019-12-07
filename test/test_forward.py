@@ -178,7 +178,8 @@ def test_ne():
     y = AD.Var([1, 2], [1, 0, 0])
     z = AD.Var([1, 2], [0, 1, 0])
     assert y != z, "error with eq"
-"""
+
+#TODO: unfixed
 def test_AD_check_tol():
     x = AD.Var(np.pi/4)
     y = AD.tan(x)
@@ -187,7 +188,8 @@ def test_AD_check_tol():
     u = AD.Var(z)
     v = AD.sin(u)
     assert np.array_equal(v._val, np.sin(z)) and np.array_equal(v._der, np.cos(z)), "error with check_tol"
-    
+
+##TODO: wrong caused by check_toi
 
 def test_exp():
     x = AD.Var(1.0, 2.0)
@@ -283,4 +285,3 @@ def test_logistic():
     y = AD.logistic(x)
     assert y._val == 1/(1+np.exp(-1.0)) and y._der == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
 
-"""
