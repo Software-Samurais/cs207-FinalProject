@@ -10,17 +10,28 @@ def test_init():
     assert y.val == 1.0 and y.der == 1.0, "error with init"
     assert np.array_equal(z.val, [1, 2]) and np.array_equal(z.der, [2, 4]), "error with init"
     
-
-"""
 def test_val():
-    x = AD.Var(1.0)
+    x = AD.Var([1], [1, 0, 0])
+    y = AD.Var([2], [0, 1, 0])
+    z = AD.Var([3], [0, 0, 1])
+    u = AD.Var([x, y])
+    f = x + y 
     assert x.val == 1.0, "error with val"
-    
+    assert np.array_equal(u.val, [1, 2]), "error with val"
+    assert f.val == 3.0, "error with val"
+ 
 def test_der():
-    x = AD.Var(1.0)
-    y = AD.Var(1.0, 0.1)
-    assert x.der == 1.0, "error with der"
-    assert y.der == 0.1, "error with der"
+    x = AD.Var([1], [1, 0, 0])
+    y = AD.Var([2], [0, 1, 0])
+    z = AD.Var([3], [0, 0, 1])
+    f = x + y + z
+    g = AD.Var([2 * x + x * y])
+    x1 = AD.Var(1.0)
+    y1 = AD.Var(1.0, 0.1)
+    assert x1.der == 1.0, "error with der"
+    assert y1.der == 0.1, "error with der"
+    assert np.array_equal(f.der, [1, 1, 1]), "error with der"
+    assert np.array_equal(g.der, [[4, 1, 0]]), "error with der"
     
 def test_val_set():
     x = AD.Var(1.0)
@@ -32,6 +43,7 @@ def test_der_set():
     x.der = 2.0
     assert x.der == 2.0, "error with der setter"
 
+""" 
 def test__repr__():
     
     # Simple scalar variable
