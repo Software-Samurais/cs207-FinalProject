@@ -21,19 +21,19 @@ class Var:
             self._val = float(a)
             if da is None:
                 self._der = 1.0
-            elif type(da) is float or type(da) is int:
-                self._der = float(da)
             else:
-                raise KeyError("The derivative format is not align with the variable")
+                self._der = float(da)
                 
         # Variables with array-like inputs
         if type(a) is list or type(a) is np.ndarray:
+            
             self._val = np.asarray(a)
             
             # Vector functions
             # NOTE: This works well for most cases, except those where a 
             # component is independent of x, y, or z.
             if isinstance(self._val.any(), Var):
+                
                 vals = []
                 jac = []
                 
@@ -51,10 +51,8 @@ class Var:
             else:
                 if da is None:     
                     self._der = np.ones(self._val.size)
-                elif len(da) == len(a):
-                    self._der = np.asarray(da).astype(float)
                 else:
-                    raise KeyError("The derivative format is not align with the variable")
+                    self._der = np.asarray(da).astype(float)
        
         
     def __repr__(self):
