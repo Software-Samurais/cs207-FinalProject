@@ -79,6 +79,10 @@ def test_add():
     v = x + u
     assert y._val == 4.0 and y._der == 1.0, "error with add"
     assert v._val == 4.0 and v._der == 1.1, "error with add"
+    a = AD.Var([3], [1, 0])
+    b = AD.Var([4], [0, 1])
+    z = a + b
+    assert np.array_equal(z._val, [7]) and np.array_equal(z._der, [1.0, 1.0]), "error with add"
 
 def test_radd():
     x = AD.Var(1.0)
@@ -95,6 +99,10 @@ def test_sub():
     v = x - u
     assert y._val == -2.0 and y._der == 1.0, "error with sub"
     assert v._val == -2.0 and v._der == 0.9, "error with sub"
+    a = AD.Var([3], [1, 0])
+    b = AD.Var([4], [0, 1])
+    z = a - b
+    assert np.array_equal(z._val, [-1]) and np.array_equal(z._der, [1.0, -1.0]), "error with add"
 
 def test_rsub():
     x = AD.Var(1.0)
@@ -113,6 +121,11 @@ def test_mul():
     assert y._val == 3.0 and y._der == 3.0, "error with mul"
     assert v._val == 2.0 and v._der == 2.1, "error with mul"
     assert z._val == 6.0 and z._der == 6.3, "error with mul"
+    x = AD.Var([3.0], [1, 0])
+    y = AD.Var([2], [0, 1])
+    z = x * y
+    assert np.array_equal(z._val, [6.0]) and np.array_equal(z._der, [2.0, 3.0]), "error with mul"
+
 
 def test_rmul():
     x = AD.Var(1.0)
@@ -123,6 +136,12 @@ def test_rmul():
     assert y._val == 3.0 and y._der == 3.0, "error with rmul"
     assert v._val == 2.0 and v._der == 2.1, "error with rmul"
     assert z._val == 6.0 and z._der == 6.3, "error with rmul"
+    x = AD.Var([3.0], [1, 0, 0])
+    y = AD.Var([1.0], [0, 1, 0])
+    w = AD.Var([2.0], [0, 0, 1])
+    z = x + y ** 2 + x * w
+    assert np.array_equal(z._val, [10.0]) and np.array_equal(z._der, [3.0, 2.0, 3.0]), "error with rmul"
+
    
 def test_truediv():
     x = AD.Var(3.0)
@@ -133,7 +152,11 @@ def test_truediv():
     assert y._val == 1.0 and y._der == 1.0/3.0, "error with truediv"
     assert v._val == 1.0/3.0 and v._der == -0.7/3.0**2, "error with truediv"
     assert z._val == 1.0/(2*3.0) and z._der == -1.4/36, "error with truediv"
-
+    x = AD.Var([3.0], [1, 0, 0])
+    y = AD.Var([1.0], [0, 1, 0])
+    w = AD.Var([2.0], [0, 0, 1])
+    z = (x + y ** 2 + x * w)/2
+    assert np.array_equal(z._val, [5.0]) and np.array_equal(z._der, [1.5, 1.0, 1.5]), "error with truediv"
 
 def test_rtruediv():
     x = AD.Var(3.0)
@@ -144,7 +167,10 @@ def test_rtruediv():
     assert y._val == 1.0 and y._der == -1.0/3.0, "error with rtruediv"
     assert v._val == 3.0 and v._der == -5.0, "error with rtruediv"
     assert z._val == 6.0 and z._der == -10.0, "error with rtruediv"
-
+    x = AD.Var(3.0)
+    a = AD.Var([ 1., 3, 3, 4.])
+    z = 3 / a
+    assert np.array_equal(z._val, [3., 1., 1., 0.75]) and np.array_equal(z._der, [-3., -1/3, -1/3, -3/16]), "error with rtruediv"
 
 def test_pow():
     x = AD.Var(2.0)
@@ -178,7 +204,7 @@ def test_ne():
     y = AD.Var([1, 2], [1, 0, 0])
     z = AD.Var([1, 2], [0, 1, 0])
     assert y != z, "error with eq"
-
+"""
 #TODO: unfixed
 def test_AD_check_tol():
     x = AD.Var(np.pi/4)
@@ -285,3 +311,4 @@ def test_logistic():
     y = AD.logistic(x)
     assert y._val == 1/(1+np.exp(-1.0)) and y._der == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
 
+"""
