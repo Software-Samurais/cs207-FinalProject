@@ -21,8 +21,10 @@ class Var:
             self._val = float(a)
             if da is None:
                 self._der = 1.0
-            else:
+            elif type(da) is float or type(da) is int:
                 self._der = float(da)
+            else:
+                raise KeyError("The format of value and derivative is not align")
                 
         # Variables with array-like inputs
         if type(a) is list or type(a) is np.ndarray:

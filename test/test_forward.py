@@ -9,6 +9,10 @@ def test_init():
     assert np.array_equal(x.val, [1, 2, 3]) and np.array_equal(x.der, np.ones(3)), "error with init"
     assert y.val == 1.0 and y.der == 1.0, "error with init"
     assert np.array_equal(z.val, [1, 2]) and np.array_equal(z.der, [2, 4]), "error with init"
+    with pytest.raises(KeyError) as e:
+        x = AD.Var(3, [1, 2])
+    assert str(e.value) == "'The format of value and derivative is not align'"
+
     
 def test_val():
     x = AD.Var([1], [1, 0, 0])
