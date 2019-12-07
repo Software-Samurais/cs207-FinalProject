@@ -43,7 +43,6 @@ def test_der_set():
     x.der = 2.0
     assert x.der == 2.0, "error with der setter"
 
-""" 
 def test__repr__():
     
     # Simple scalar variable
@@ -55,10 +54,22 @@ def test__repr__():
     y = AD.Var(x)
     assert repr(y) == f"Function values:\n{x}\nDerivative values:\n{np.ones(x.size)}"
     
-    # TODO: Vector variables
-    # x = AD.Var([1, 2, 3], [1, 0, 0])
-    # y = AD.Var([4, 5, 6], [0, 1, 0])
+    # Vector variables
+    x = AD.Var([1, 2, 3], [1, 0, 0])
+    y = AD.Var([4, 5, 6], [0, 1, 0])
+    assert repr(x+y) == f"Function values:\n{(x+y).val}\nDerivative values:\n{(x+y).der}"
+
+    x = AD.Var([1], [1, 0, 0])
+    y = AD.Var([2], [0, 1, 0])
+    z = AD.Var([3], [0, 0, 1])
+    f = x + y + z
+    assert repr(f) == f"Function values:\n{f.val}\nGradient:\n{f.der}"
+    g = AD.Var([x, y ** 2, z ** 4])
+    assert repr(g) == f"Function values:\n{g.val}\nJacobian:\n{g.der}"
+
     
+  
+"""   
 def test_neg():
     x = AD.Var(1.0, 0.1)
     assert (-x).val == -1, "error with neg"

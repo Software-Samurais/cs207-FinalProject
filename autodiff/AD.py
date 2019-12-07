@@ -62,9 +62,9 @@ class Var:
             if self._val.shape != self._der.shape:
                 try:
                     n, m = self._der.shape
-                    return f"Function:\n{self._val}\nJacobian:\n{self._der}"
+                    return f"Function values:\n{self._val}\nJacobian:\n{self._der}"
                 except ValueError:
-                    return f"Function:\n{self._val}\nGradient:\n{self._der}"
+                    return f"Function values:\n{self._val}\nGradient:\n{self._der}"
             
             # For scalar functions using arrays
             else:
