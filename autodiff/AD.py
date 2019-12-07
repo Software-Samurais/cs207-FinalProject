@@ -1,6 +1,6 @@
 import numpy as np
 
-class Forward:
+class Var:
     
     def __init__(self, a, da=None):
         #Old __init__ method
