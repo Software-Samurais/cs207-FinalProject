@@ -5,12 +5,10 @@ import pytest
 def test_init():
     x = AD.Var([1, 2, 3])
     y = AD.Var(1)
-    z = AD.Var([1, 3], [2, 4])
+    z = 
     assert np.array_equal(x.val, [1, 2, 3]) and np.array_equal(x.der, np.ones(3)), "error with init"
     assert y.val == 1.0 and y.der == 1.0, "error with init"
-    assert np.array_equal(z.val, [1, 3]) and np.array_equal(z.der, [2, 4]), "error with init"
- 
-'''   
+    
 def test_val():
     x = AD.Var(1.0)
     assert x.val == 1.0, "error with val"

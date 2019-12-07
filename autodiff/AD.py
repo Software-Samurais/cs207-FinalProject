@@ -32,7 +32,7 @@ class Var:
             # Vector functions
             # NOTE: This works well for most cases, except those where a 
             # component is independent of x, y, or z.
-            if isinstance(self._val.any(), Var):
+            if isinstance(self._val.any(), Forward):
                 
                 vals = []
                 jac = []
@@ -93,13 +93,13 @@ class Var:
     # Operator overloading
     # ====================
     def __neg__(self):
-        return Var(-self._val, -self._der)
+        return Forward(-self._val, -self._der)
     
     def __add__(self, other):
         try:
-            return Var(self._val + other._val, self._der + other._der)
+            return Forward(self._val + other._val, self._der + other._der)
         except AttributeError:
-            return Var(self._val + other, self._der)
+            return Forward(self._val + other, self._der)
         
     def __radd__(self, other):
         return self.__add__(other)
@@ -112,27 +112,27 @@ class Var:
     
     def __mul__(self, other):
         try:
-            return Var(self._val*other._val, self._val*other._der + self._der*other._val)
+            return Forward(self._val*other._val, self._val*other._der + self._der*other._val)
         except AttributeError:
-            return Var(other*self._val, other*self._der)
+            return Forward(other*self._val, other*self._der)
     
     def __rmul__(self, other):
         return self.__mul__(other)
         
     def __truediv__(self, other):
         try: 
-            return Var(self._val/other._val, (self._der*other._val - self._val*other._der)/other._val**2)
+            return Forward(self._val/other._val, (self._der*other._val - self._val*other._der)/other._val**2)
         except AttributeError:
-            return Var(self._val/other, self._der/other)
+            return Forward(self._val/other, self._der/other)
             
     def __rtruediv__(self, other):
         try: 
-            return Var(other._val/self._val, (other._der*self._val - other._val*self._der)/self._val**2)
+            return Forward(other._val/self._val, (other._der*self._val - other._val*self._der)/self._val**2)
         except AttributeError:
-            return Var(other/self._val, -other*self._der/self._val**2)
+            return Forward(other/self._val, -other*self._der/self._val**2)
     
     def __pow__(self, n):
-        return Var(self._val**n, n*self._val**(n-1)*self._der)
+        return Forward(self._val**n, n*self._val**(n-1)*self._der)
         
     # TODO: __rpow__
     
@@ -164,10 +164,10 @@ def check_tol(x, tol=1e-8):
     by default), the rounded value will replace the calculated value.
     
     Args:
-    - x (Var): Scalar Var mode variable
+    - x (Forward): Scalar forward mode variable
     
     Returns:
-    - x (Var): Updated scalar Var mode variable, if the difference 
+    - x (Forward): Updated scalar forward mode variable, if the difference 
       between the actual value and the rounded value is less than some 
       tolerance; otherwise, the input is returned
     """
@@ -199,41 +199,41 @@ def check_tol(x, tol=1e-8):
 # =======================
 
 def sin(x):
-    """Returns the sine of a scalar Var mode variable and its derivative.
+    """Returns the sine of a scalar forward mode variable and its derivative.
     
     Args:
-    - x (Var): Scalar Var mode variable
+    - x (Forward): Scalar forward mode variable
     
     Returns:
-    - (Var): Sine value and the corresponding derivative value; `check_tol`
+    - (Forward): Sine value and the corresponding derivative value; `check_tol`
       is called to remove rounding errors
     """
-    return check_tol(Var(np.sin(x._val), np.cos(x._val)*x._der))
+    return check_tol(Forward(np.sin(x._val), np.cos(x._val)*x._der))
 
 def cos(x):
-    """Returns the cosine of a scalar Var mode variable and its derivative.
+    """Returns the cosine of a scalar forward mode variable and its derivative.
     
     Args: 
-    - x (Var): Scalar Var mode variable
+    - x (Forward): Scalar forward mode variable
     
     Returns:
-    - (Var): Cosine value and the corresponding derivative value; 
+    - (Forward): Cosine value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    return check_tol(Var(np.cos(x._val), -np.sin(x._val)*x._der))
+    return check_tol(Forward(np.cos(x._val), -np.sin(x._val)*x._der))
     
 def tan(x):
-    """Returns the tangent of a scalar Var mode variable and its derivative.
+    """Returns the tangent of a scalar forward mode variable and its derivative.
     
     Args: 
-    - x (Var): Scalar Var mode variable
+    - x (Forward): Scalar forward mode variable
     
     Returns:
-    - (Var): Tangent value and the corresponding derivative value; 
+    - (Forward): Tangent value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
     if cos(x)._val != 0:
-        return check_tol(Var(np.tan(x._val), np.cos(x._val)**(-2)*x._der))
+        return check_tol(Forward(np.tan(x._val), np.cos(x._val)**(-2)*x._der))
     else:
         raise ValueError("Cannot divide by zero")
 
@@ -242,18 +242,18 @@ def tan(x):
      
 def arcsin(x):
     if abs(1-x._val**2) > 1e-8:
-        return check_tol(Var(np.arcsin(x._val), x._der/np.sqrt(1-x._val**2)))
+        return check_tol(Forward(np.arcsin(x._val), x._der/np.sqrt(1-x._val**2)))
     else:
         raise ValueError("Cannot divide by zero")
         
 def arccos(x):
     if abs(1-x._val**2) > 1e-8:
-        return check_tol(Var(np.arccos(x._val), -x._der/np.sqrt(1-x._val**2)))
+        return check_tol(Forward(np.arccos(x._val), -x._der/np.sqrt(1-x._val**2)))
     else:
         raise ValueError("Cannot divide by zero")
         
 def arctan(x):
-    return check_tol(Var(np.arctan(x._val), x._der/(1+x._val**2)))
+    return check_tol(Forward(np.arctan(x._val), x._der/(1+x._val**2)))
     
 # Exponentials
 # ============
@@ -261,32 +261,32 @@ def arctan(x):
 # via operator overloading of the power method. 
 
 def exp(x):
-    """Returns the exponential of a Var mode variable and its derivative.
+    """Returns the exponential of a forward mode variable and its derivative.
     
     Args: 
-    - x (Var): Scalar Var mode variable
+    - x (Forward): Scalar forward mode variable
     
     Returns:
-    - (Var): Exponential value and the corresponding derivative value; 
+    - (Forward): Exponential value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    return check_tol(Var(np.exp(x._val), np.exp(x._val)*x._der))
+    return check_tol(Forward(np.exp(x._val), np.exp(x._val)*x._der))
 
 # Logarithms
 # ==========
  
 def log(x):
-    """Returns the logarithm of a Var mode variable and its derivative.
+    """Returns the logarithm of a forward mode variable and its derivative.
     
     Args: 
-    - x (Var): Scalar Var mode variable
+    - x (Forward): Scalar forward mode variable
     
     Returns:
-    - (Var): Logarithm value and the corresponding derivative value; 
+    - (Forward): Logarithm value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
     if x._val != 0:
-        return check_tol(Var(np.log(x._val), x._der/x._val))
+        return check_tol(Forward(np.log(x._val), x._der/x._val))
     else:
         raise ValueError("Cannot divide by zero")
         
@@ -309,7 +309,7 @@ def tanh(x):
 
 def sqrt(x):
     if x._val > 0:
-        return check_tol(Var(np.sqrt(x._val), -x._der/(2*np.sqrt(x._val))))
+        return check_tol(Forward(np.sqrt(x._val), -x._der/(2*np.sqrt(x._val))))
     else:
         raise ValueError("Invalid domain")
         
