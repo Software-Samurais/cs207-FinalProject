@@ -9,12 +9,6 @@ def test_init():
     assert np.array_equal(x.val, [1, 2, 3]) and np.array_equal(x.der, np.ones(3)), "error with init"
     assert y.val == 1.0 and y.der == 1.0, "error with init"
     assert np.array_equal(z.val, [1, 3]) and np.array_equal(z.der, [2, 4]), "error with init"
-    with pytest.raises(KeyError) as e:
-        u = AD.Var(1, [])
-    assert str(e.value) == "'The derivative format is not align with the variable'"
-    with pytest.raises(KeyError) as e:
-        u = AD.Var([1, 2], [1, 2, 3])
-    assert str(e.value) == "'The derivative format is not align with the variable'"
  
 '''   
 def test_val():
@@ -260,5 +254,5 @@ def test_logistic():
     x = AD.Var(1.0)
     y = AD.logistic(x)
     assert y._val == 1/(1+np.exp(-1.0)) and y._der == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
- ''' 
+
 
