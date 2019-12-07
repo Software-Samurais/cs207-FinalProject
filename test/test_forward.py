@@ -5,10 +5,12 @@ import pytest
 def test_init():
     x = AD.Var([1, 2, 3])
     y = AD.Var(1)
-    z = 
+    z = AD.Var([1, 3], [2, 4])
     assert np.array_equal(x.val, [1, 2, 3]) and np.array_equal(x.der, np.ones(3)), "error with init"
     assert y.val == 1.0 and y.der == 1.0, "error with init"
-    
+    assert np.array_equal(z.val, [1, 3]) and np.array_equal(z.der, [2, 4]), "error with init"
+ 
+'''   
 def test_val():
     x = AD.Var(1.0)
     assert x.val == 1.0, "error with val"
@@ -252,5 +254,5 @@ def test_logistic():
     x = AD.Var(1.0)
     y = AD.logistic(x)
     assert y._val == 1/(1+np.exp(-1.0)) and y._der == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
-
+ ''' 
 
