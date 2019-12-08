@@ -228,7 +228,6 @@ def test_ne():
     z = AD.Var([1, 2], [0, 1, 0])
     assert y != z, "error with eq"
 
-#TODO: unfixed
 def test_AD_check_tol():
     x = AD.Var(np.pi/4)
     y = AD.tan(x)
@@ -338,7 +337,7 @@ def test_sqrt():
     with pytest.raises(ValueError) as e:
         u = AD.Var([-1.0])
         v = AD.sqrt(u)
-    assert str(e.value) == "x should be larger than 0"
+    assert str(e.value) == "The function value should be greater than zero."
 
 def test_logistic():
     x = AD.Var(1.0)
