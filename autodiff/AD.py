@@ -1,225 +1,163 @@
 import numpy as np
 
-class AutoDiff():
-    """Returns a scalar variable for forward mode automatic differentiation.
+class Var:
     
-    Attributes:
-    - _val (float): Function value (private)
-    - _der (float): Derivative value (private)
-    
-    NOTE: There are getter and setter methods that correspond to `_val` and 
-    `_der` which allow the user to easily access and manually update the 
-    function and derivative values of an AutoDiff instance.
-    """
-    
-    def __init__(self, a, da=1.0):
-        """Defines function and derivative values of a scalar forward mode 
-        variable.
-        
-        Args:
-        - a (float): Function value
-        - da (float): Derivative value; defaults to 1.0 if the user does not 
-          pass in a value
-          
-        Returns:
-        - None
+    def __init__(self, a, da=None):
+        #Old __init__ method
         """
-        self._val = a
-        self._der = da
+        self._val = np.asarray(a).astype(float)
+        if da is None:     
+            if self._val.size == 1:
+                self._der = 1.0
+            else:
+                self._der = np.ones(self._val.size)
+        else:
+            self._der = np.asarray(da).astype(float)
+        """
+        # New constructor
+        # NOTE: This makes many of the unit tests fail!
+         # Simple scalar variables
+        if type(a) is float or type(a) is int:
+            self._val = float(a)
+            if da is None:
+                self._der = 1.0
+            elif type(da) is float or type(da) is int:
+                self._der = float(da)
+            else:
+                raise KeyError("The format of value and derivative is not align")
+                
+        # Variables with array-like inputs
+        if type(a) is list or type(a) is np.ndarray:
+            self._val = np.asarray(a)
+            
+            # Vector functions
+            # NOTE: This works well for most cases, except those where a 
+            # component is independent of x, y, or z.
+            if isinstance(self._val.any(), Var):
+                
+                vals = []
+                jac = []
+                
+                for element in self._val:
+                    try:
+                        vals.append(element._val)
+                        jac.append(element._der)
+                    except AttributeError:
+                        vals.append(element)
+                        jac.append(np.zeros(len(a)))
+                
+                self._val = np.asarray(vals).astype(float).flatten()
+                self._der = np.asarray(jac).astype(float)
+                
+            else:
+                if da is None:     
+                    self._der = np.ones(self._val.size)
+                else:
+                    self._der = np.asarray(da).astype(float)
+       
+        
+    def __repr__(self):
+        try:
+            # For vector functions
+            if self._val.shape != self._der.shape:
+                try:
+                    n, m = self._der.shape
+                    return f"Function values:\n{self._val}\nJacobian:\n{self._der}"
+                except ValueError:
+                    return f"Function values:\n{self._val}\nGradient:\n{self._der}"
+            
+            # For scalar functions using arrays
+            else:
+                return f"Function values:\n{self._val}\nDerivative values:\n{self._der}"
+        
+        # Simple scalar variables
+        except AttributeError:
+            return f"Function value:\n{self._val}\nDerivative value:\n{self._der}"            
     
     @property
     def val(self):
-        """Returns function value of a scalar forward mode variable."""
         return self._val
-        
+    
     @property
     def der(self):
-        """Returns derivative value of a scalar forward mode variable."""
         return self._der
-        
+    
     @val.setter
     def val(self, a):
-        """Sets the function value of a scalar forward mode variable.
-        
-        Args:
-        - a (float): New function value
-        
-        Returns:
-        - None
-        """
         self._val = a
         
     @der.setter
     def der(self, da):
-        """Sets the derivative value of a scalar forward mode variable.
-        
-        Args:
-        - da (float): New derivative value
-        
-        Returns:
-        - None
-        """
         self._der = da
-        
-    def __repr__(self):
-        """Returns relevant information about a scalar forward mode variable."""
-        return f"Function value: {self._val}, Derivative value: {self._der}"
-
-    def  __neg__(self):
-        """Overloads negation."""
-        return AutoDiff(-self._val, -self._der)
-        
+    
+    # Operator overloading
+    # ====================
+    def __neg__(self):
+        return Var(-self._val, -self._der)
+    
     def __add__(self, other):
-        """Overloads addition.
-        
-        Args:
-        - self (AutoDiff): Scalar forward mode variable
-        - other (AutoDiff or float): Accepts a scalar forward mode variable or 
-          an ordinary float
-          
-        Returns:
-        - (AutoDiff): New scalar forward mode variable that is the sum of the 
-          arguments. If a float is passed as the second argument, the derivative
-          value of the new scalar forward mode variable will be the same as that
-          of the first argument.
-        """
         try:
-            return AutoDiff(self._val + other._val, self._der + other._der)
+            return Var(self._val + other._val, self._der + other._der)
         except AttributeError:
-            return AutoDiff(self._val + other, self._der)
+            return Var(self._val + other, self._der)
         
     def __radd__(self, other):
-        """Overloads addition from the right.
-        
-        Args:
-        - self (AutoDiff): Scalar forward mode variable
-        - other (AutoDiff or float): Accepts a scalar forward mode variable or 
-          an ordinary float
-          
-        Returns:
-        - (AutoDiff): New scalar forward mode variable that is the sum of the 
-          arguments. If a float is passed as the second argument, the derivative
-          value of the new scalar forward mode variable will be the same as that
-          of the first argument.
-        """
         return self.__add__(other)
-            
+    
     def __sub__(self, other):
-        """Overloads subtraction.
-        
-        Args:
-        - self (AutoDiff): Scalar forward mode variable
-        - other (AutoDiff or float): Accepts a scalar forward mode variable or 
-          an ordinary float
-          
-        Returns:
-        - (AutoDiff): New scalar forward mode variable that is the difference of
-          the arguments. If a float is passed as the second argument, the 
-          derivative value of the new scalar forward mode variable will be the 
-          same as that of the first argument.
-        """
         return self.__add__(-other)
-            
+    
     def __rsub__(self, other):
-        """Overloads subtraction from the right.
-        
-        Args:
-        - self (AutoDiff): Scalar forward mode variable
-        - other (AutoDiff or float): Accepts a scalar forward mode variable or 
-          an ordinary float
-          
-        Returns:
-        - (AutoDiff): New scalar forward mode variable that is the difference of
-          the arguments. If a float is passed as the second argument, the 
-          derivative value of the new scalar forward mode variable will be the 
-          same as that of the first argument.
-        """
         return -self.__sub__(other)
-            
+    
     def __mul__(self, other):
-        """Overloads multiplication.
-        
-        Args:
-        - self (AutoDiff): Scalar forward mode variable
-        - other (AutoDiff or float): Accepts a scalar forward mode variable or 
-          an ordinary float
-          
-        Returns:
-        - (AutoDiff): New scalar forward mode variable that is the product of
-          the arguments. This operation follows the product and chain rules of 
-          differentiation. Passing in a float as the second argument corresponds
-          to scaling the function and derivative values of the first argument.
-        """
         try:
-            return AutoDiff(self._val*other._val, self._der*other._val + self._val*other._der)
+            return Var(self._val*other._val, self._val*other._der + self._der*other._val)
         except AttributeError:
-            return AutoDiff(other*self._val, other*self._der)
-            
+            return Var(other*self._val, other*self._der)
+    
     def __rmul__(self, other):
-        """Overloads multiplication from the right.
-        
-        Args:
-        - self (AutoDiff): Scalar forward mode variable
-        - other (AutoDiff or float): Accepts a scalar forward mode variable or 
-          an ordinary float
-          
-        Returns:
-        - (AutoDiff): New scalar forward mode variable that is the product of
-          the arguments. This operation follows the product and chain rules of 
-          differentiation. Passing in a float as the second argument corresponds
-          to scaling the function and derivative values of the first argument.
-        """
         return self.__mul__(other)
         
     def __truediv__(self, other):
-        """Overloads division.
-        
-        Args:
-        - self (AutoDiff): Scalar forward mode variable
-        - other (AutoDiff or float): Accepts a scalar forward mode variable or 
-          an ordinary float
-          
-        Returns:
-        - (AutoDiff): New scalar forward mode variable that is the quotient of
-          the arguments. This operation follows the quotient and chain rules of 
-          differentiation. Passing in a float as the second argument corresponds
-          to scaling the function and derivative values of the first argument.
-        """
         try: 
-            return AutoDiff(self._val/other._val, (self._der*other._val - self._val*other._der)/other._val**2)
+            return Var(self._val/other._val, (self._der*other._val - self._val*other._der)/other._val**2)
         except AttributeError:
-            return AutoDiff(self._val/other, self._der/other)
-    
+            return Var(self._val/other, self._der/other)
+            
     def __rtruediv__(self, other):
-        """Overloads division from the right.
-        
-        Args:
-        - self (AutoDiff): Scalar forward mode variable
-        - other (AutoDiff or float): Accepts a scalar forward mode variable or 
-          an ordinary float
-          
-        Returns:
-        - (AutoDiff): New scalar forward mode variable that is the quotient of
-          the arguments. This operation follows the quotient and chain rules of 
-          differentiation. Passing in a float as the second argument corresponds
-          to scaling the function and derivative values of the first argument.
-        """
         try: 
-            return AutoDiff(self._val/other._val, (other._der*self._val - other._val*self._der)/self._val**2)
+            return Var(other._val/self._val, (other._der*self._val - other._val*self._der)/self._val**2)
         except AttributeError:
-            return AutoDiff(other/self._val, -other/self._val **2)
+            return Var(other/self._val, -other*self._der/self._val**2)
+    
+    def __pow__(self, p):
+        try:
+            return Var([self._val**p._val], [p._val*self._val**(p._val-1) * self._der, np.log(self._val) * self._val ** p._val * p._der])
+        except AttributeError:
+            return Var(self._val ** p, p * self._val ** (p - 1) * self._der)
 
-    def __pow__(self, n):
-        """Overloads the power operator.
-        
-        Args:
-        - n (int or float): Exponent
-        
-        Returns:
-        - (AutoDiff): New scalar forward mode variable raised to the n power;  
-          This operation follows the power and chain rules of differentiation. 
-        """
-        return AutoDiff(self._val**n, n*(self._val**(n-1))*self._der)
+            
+    # Comparison operators
+    # ====================
+    
+    def __eq__(self, other):
+        try:
+            if isinstance(self.val, float) and isinstance(other.val, float):
+                if self.val == other.val and self.der == other.der:
+                    return True
+                else:
+                    return False
+            else:
+                if np.array_equal(self.val, other.val) and np.array_equal(self.der, other.der):
+                    return True
+                else:
+                    return False
+        except AttributeError:
+            raise TypeError("Cannot compare objects of different types")
+            
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 def check_tol(x, tol=1e-8):
     """Returns rounded function and/or derivative values.
@@ -234,85 +172,166 @@ def check_tol(x, tol=1e-8):
     by default), the rounded value will replace the calculated value.
     
     Args:
-    - x (AutoDiff): Scalar forward mode variable
+    - x (Var): Scalar Var mode variable
     
     Returns:
-    - x (AutoDiff): Updated scalar forward mode variable, if the difference 
+    - x (Var): Updated scalar Var mode variable, if the difference 
       between the actual value and the rounded value is less than some 
       tolerance; otherwise, the input is returned
     """
-    # Check function value
-    if abs(x._val - np.round(x._val)) < tol:
-        x._val = np.round(x._val)
-        
-    # Check derivative value
-    if abs(x._der - np.round(x._der)) < tol:
-        x._der = np.round(x._der)
+    try:
+        # Check function value
+        if abs(x._val - np.round(x._val)) < tol:
+            x._val = np.round(x._val)
+            
+        # Check derivative value
+        if abs(x._der - np.round(x._der)) < tol:
+            x._der = np.round(x._der)
+    except ValueError:
+        for k in range(x._val.size):
+            try:
+                if abs(x._val[k] - np.round(x._val[k])) < tol:
+                    x._val[k] = np.round(x._val[k])
+            except IndexError:
+                pass
+            
+            try:
+                if abs(x._der[k] - np.round(x._der[k])) < tol:
+                    x._der[k] = np.round(x._der[k])
+            except IndexError:
+                pass
 
     return x
 
+# Trigonometric functions
+# =======================
+
 def sin(x):
-    """Returns the sine of a scalar forward mode variable and its derivative.
+    """Returns the sine of a scalar Var mode variable and its derivative.
     
     Args:
-    - x (AutoDiff): Scalar forward mode variable
+    - x (Var): Scalar Var mode variable
     
     Returns:
-    - (AutoDiff): Sine value and the corresponding derivative value; `check_tol`
+    - (Var): Sine value and the corresponding derivative value; `check_tol`
       is called to remove rounding errors
     """
-    return check_tol(AutoDiff(np.sin(x._val), np.cos(x._val)*x._der))
+    return Var(np.sin(x._val), np.cos(x._val)*x._der)
 
 def cos(x):
-    """Returns the cosine of a scalar forward mode variable and its derivative.
+    """Returns the cosine of a scalar Var mode variable and its derivative.
     
     Args: 
-    - x (AutoDiff): Scalar forward mode variable
+    - x (Var): Scalar Var mode variable
     
     Returns:
-    - (AutoDiff): Cosine value and the corresponding derivative value; 
+    - (Var): Cosine value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    return check_tol(AutoDiff(np.cos(x._val), -np.sin(x._val)*x._der))
+    return Var(np.cos(x._val), -np.sin(x._val)*x._der)
     
 def tan(x):
-    """Returns the tangent of a scalar forward mode variable and its derivative.
+    """Returns the tangent of a scalar Var mode variable and its derivative.
     
     Args: 
-    - x (AutoDiff): Scalar forward mode variable
+    - x (Var): Scalar Var mode variable
     
     Returns:
-    - (AutoDiff): Tangent value and the corresponding derivative value; 
+    - (Var): Tangent value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    if cos(x)._val != 0:
-        return check_tol(AutoDiff(np.tan(x._val), np.cos(x._val)**(-2)*x._der))
+    if (type(x._val) is float or type(x._val) is int and np.abs(x._val - np.pi/2) > 10e-8) or np.abs(x._val - np.pi/2).all() > 10e-8:
+        return Var(np.tan(x._val), np.cos(x._val)**(-2)*x._der)
     else:
         raise ValueError("Cannot divide by zero")
+
+# Inverse trigonometric functions
+# ===============================
+     
+def arcsin(x):
+    if ((x._val - 1) < 0).all() and ((x._val + 1) >0).all():
+        return Var(np.arcsin(x._val), x._der/np.sqrt(1-x._val**2))
+    else:
+        raise ValueError("x should be in (-1, 1) for arcsin")
+        
+def arccos(x):
+    if ((x._val - 1) < 0).all() and ((x._val + 1) > 0).all():
+        return Var(np.arccos(x._val), -x._der/np.sqrt(1-x._val**2))
+    else:
+        raise ValueError("x should be in (-1, 1) for arccos")
+        
+def arctan(x):
+    if ((x._val - np.pi/2) < 0).all() and ((x._val + np.pi/2) > 0).all():
+        return Var(np.arctan(x._val), x._der/(1+x._val**2))
+    else:
+        raise ValueError("x should be in (-pi/2, pi/2) for arctan")
     
-def exp(x):
-    """Returns the exponential of a forward mode variable and its derivative.
+# Exponentials
+# ============
+# NOTE: The natural base is treated as a special case. All others are handled 
+# via operator overloading of the power method. 
+
+def exp(x, base=None):
+    """Returns the exponential of a Var mode variable and its derivative.
     
     Args: 
-    - x (AutoDiff): Scalar forward mode variable
+    - x (Var): Scalar Var mode variable
     
     Returns:
-    - (AutoDiff): Exponential value and the corresponding derivative value; 
+    - (Var): Exponential value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    return check_tol(AutoDiff(np.exp(x._val), np.exp(x._val)*x._der))
-    
-def log(x):
-    """Returns the logarithm of a forward mode variable and its derivative.
+    if base is None:
+        return Var(np.exp(x._val), np.exp(x._val)*x._der)
+    else:
+        return Var(np.power(base, x._val), np.power(base, x._val)*np.log(base))
+
+# Logarithms
+# ==========
+ 
+def log(x, base=None):
+    """Returns the logarithm of a Var mode variable and its derivative.
     
     Args: 
-    - x (AutoDiff): Scalar forward mode variable
+    - x (Var): Scalar Var mode variable
     
     Returns:
-    - (AutoDiff): Logarithm value and the corresponding derivative value; 
+    - (Var): Logarithm value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    if x._val != 0:
-        return check_tol(AutoDiff(np.log(x._val), x._der/x._val))
+    if (type(x._val) is float or type(x._val) is int and x._val != 0) or x._val.all():
+        if base is None:
+            return Var(np.log(x._val), x._der/x._val)
+        else:
+            return Var(np.log(x._val)/np.log(base), 1/(x._val*np.log(base)))
     else:
         raise ValueError("Cannot divide by zero")
+        
+        
+# Hyperbolic functions
+# ====================
+
+def sinh(x):
+    return (exp(x) - exp(-x))/2
+    
+def cosh(x):
+    return (exp(x) + exp(-x))/2
+    
+def tanh(x):
+    return sinh(x)/cosh(x)
+    
+# Square root
+# ===========
+
+def sqrt(x):
+    if (x._val > 0).all():
+        return Var(np.sqrt(x._val), x._der/(2*np.sqrt(x._val)))
+    else:
+        raise ValueError("x should be larger than 0")
+        
+# Logisitc function
+# =================
+
+def logistic(x):
+    return 1/(1 + exp(-x))
+
