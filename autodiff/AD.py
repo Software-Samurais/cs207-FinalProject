@@ -171,9 +171,10 @@ def check_tol(x, tol=1e-8):
             x._val = np.round(x._val)
     
     except ValueError:
-        for value in x._val:
-            if abs(value - np.round(value)) < tol:
-                value = np.round(value)
+        with np.nditer(x._val, op_flags=["readwrite"]) as it:
+            for entry in it:
+                if abs(entry - np.round(entry)) < tol:
+                    entry[...] = np.round(entry)
             
     # Check derivative value(s)
     try:
@@ -181,9 +182,10 @@ def check_tol(x, tol=1e-8):
             x._der = np.round(x._der)
         
     except ValueError:
-         for entry in np.nditer(x._der):
-            if abs(entry - np.round(entry)) < tol:
-                entry = np.round(entry)
+        with np.nditer(x._der, op_flags=["readwrite"]) as it:
+            for entry in it:
+                if abs(entry - np.round(entry)) < tol:
+                    entry[...] = np.round(entry)
                 
     return x
 
