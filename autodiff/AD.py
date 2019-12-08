@@ -1,78 +1,61 @@
 import numpy as np
 
 class Var:
+    """Forward mode variable"""
     
     def __init__(self, a, da=None):
-        #Old __init__ method
-        """
-        self._val = np.asarray(a).astype(float)
-        if da is None:     
-            if self._val.size == 1:
-                self._der = 1.0
-            else:
-                self._der = np.ones(self._val.size)
-        else:
-            self._der = np.asarray(da).astype(float)
-        """
-        # New constructor
-        # NOTE: This makes many of the unit tests fail!
-         # Simple scalar variables
-        if type(a) is float or type(a) is int:
-            self._val = float(a)
-            if da is None:
-                self._der = 1.0
-            elif type(da) is float or type(da) is int:
-                self._der = float(da)
-            else:
-                raise KeyError("The format of value and derivative is not align")
-                
-        # Variables with array-like inputs
-        if type(a) is list or type(a) is np.ndarray:
-            self._val = np.asarray(a)
-            
-            # Vector functions
-            # NOTE: This works well for most cases, except those where a 
-            # component is independent of x, y, or z.
-            if isinstance(self._val.any(), Var):
-                
-                vals = []
-                jac = []
-                
-                for element in self._val:
-                    try:
-                        vals.append(element._val)
-                        jac.append(element._der)
-                    except AttributeError:
-                        vals.append(element)
-                        jac.append(np.zeros(len(a)))
-                
-                self._val = np.asarray(vals).astype(float).flatten()
-                self._der = np.asarray(jac).astype(float)
-                
-            else:
-                if da is None:     
-                    self._der = np.ones(self._val.size)
-                else:
-                    self._der = np.asarray(da).astype(float)
-       
         
-    def __repr__(self):
-        try:
-            # For vector functions
-            if self._val.shape != self._der.shape:
+        # Set function value(s)
+        self._val = np.asarray(a)
+        
+        # Length of the input 
+        n = self._val.size
+        
+        if isinstance(self._val.any(), Var):
+            
+            vals = []
+            jac = []
+            
+            for element in self._val:
                 try:
-                    n, m = self._der.shape
-                    return f"Function values:\n{self._val}\nJacobian:\n{self._der}"
-                except ValueError:
-                    return f"Function values:\n{self._val}\nGradient:\n{self._der}"
+                    vals.append(element._val)
+                    jac.append(element._der)
+                except AttributeError:
+                    vals.append(element)
+                    jac.append(np.zeros(n))
             
-            # For scalar functions using arrays
-            else:
-                return f"Function values:\n{self._val}\nDerivative values:\n{self._der}"
-        
+            # Reset attributes
+            self._val = np.asarray(vals).astype(float).flatten()
+            self._der = np.asarray(jac).astype(float)
+            
+        else:
+            self._val = self._val.astype(float)
+            
+            if da is None:
+                if n == 1:
+                    self._der = np.asarray(1.)
+                else:
+                    self._der = np.ones(n)
+            else: 
+                self._der = np.asarray(da).astype(float)
+                
+    def __repr__(self):
+    
         # Simple scalar variables
-        except AttributeError:
-            return f"Function value:\n{self._val}\nDerivative value:\n{self._der}"            
+        if self._val.size == 1 and self._der.size == 1:
+            return f"Function value:\n{self._val}\nDerivative value:\n{self._der}"
+        
+        # Scalar variables with array-like inputs
+        if self._val.size == self._der.size:
+            return f"Function values:\n{self._val}\nDerivative values:\n{self._der}"
+        
+        # Vector function variables
+        if self._val.shape != self._der.shape:
+            try:
+                n, m = self._der.shape
+                return f"Function values:\n{self._val}\nJacobian:\n{self._der}"
+            except ValueError:
+                return f"Function value:\n{float(self._val)}\nGradient:\n{self._der}"
     
     @property
     def val(self):
@@ -143,16 +126,18 @@ class Var:
     
     def __eq__(self, other):
         try:
-            if isinstance(self.val, float) and isinstance(other.val, float):
-                if self.val == other.val and self.der == other.der:
-                    return True
+            """
+                if isinstance(self.val, float) and isinstance(other.val, float):
+                    if self.val == other.val and self.der == other.der:
+                        return True
+                    else:
+                        return False
                 else:
-                    return False
+            """
+            if np.array_equal(self.val, other.val) and np.array_equal(self.der, other.der):
+                return True
             else:
-                if np.array_equal(self.val, other.val) and np.array_equal(self.der, other.der):
-                    return True
-                else:
-                    return False
+                return False
         except AttributeError:
             raise TypeError("Cannot compare objects of different types")
             
@@ -179,28 +164,27 @@ def check_tol(x, tol=1e-8):
       between the actual value and the rounded value is less than some 
       tolerance; otherwise, the input is returned
     """
+    
+    # Check function value(s)
     try:
-        # Check function value
         if abs(x._val - np.round(x._val)) < tol:
             x._val = np.round(x._val)
+    
+    except ValueError:
+        for value in x._val:
+            if abs(value - np.round(value)) < tol:
+                value = np.round(value)
             
-        # Check derivative value
+    # Check derivative value(s)
+    try:
         if abs(x._der - np.round(x._der)) < tol:
             x._der = np.round(x._der)
+        
     except ValueError:
-        for k in range(x._val.size):
-            try:
-                if abs(x._val[k] - np.round(x._val[k])) < tol:
-                    x._val[k] = np.round(x._val[k])
-            except IndexError:
-                pass
-            
-            try:
-                if abs(x._der[k] - np.round(x._der[k])) < tol:
-                    x._der[k] = np.round(x._der[k])
-            except IndexError:
-                pass
-
+         for entry in np.nditer(x._der):
+            if abs(entry - np.round(entry)) < tol:
+                entry = np.round(entry)
+                
     return x
 
 # Trigonometric functions
@@ -216,7 +200,7 @@ def sin(x):
     - (Var): Sine value and the corresponding derivative value; `check_tol`
       is called to remove rounding errors
     """
-    return Var(np.sin(x._val), np.cos(x._val)*x._der)
+    return check_tol(Var(np.sin(x._val), np.cos(x._val)*x._der))
 
 def cos(x):
     """Returns the cosine of a scalar Var mode variable and its derivative.
@@ -228,7 +212,7 @@ def cos(x):
     - (Var): Cosine value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    return Var(np.cos(x._val), -np.sin(x._val)*x._der)
+    return check_tol(Var(np.cos(x._val), -np.sin(x._val)*x._der))
     
 def tan(x):
     """Returns the tangent of a scalar Var mode variable and its derivative.
@@ -241,7 +225,7 @@ def tan(x):
       `check_tol` is called to remove rounding errors
     """
     if (type(x._val) is float or type(x._val) is int and np.abs(x._val - np.pi/2) > 10e-8) or np.abs(x._val - np.pi/2).all() > 10e-8:
-        return Var(np.tan(x._val), np.cos(x._val)**(-2)*x._der)
+        return check_tol(Var(np.tan(x._val), np.cos(x._val)**(-2)*x._der))
     else:
         raise ValueError("Cannot divide by zero")
 
@@ -250,19 +234,19 @@ def tan(x):
      
 def arcsin(x):
     if ((x._val - 1) < 0).all() and ((x._val + 1) >0).all():
-        return Var(np.arcsin(x._val), x._der/np.sqrt(1-x._val**2))
+        return check_tol(Var(np.arcsin(x._val), x._der/np.sqrt(1-x._val**2)))
     else:
         raise ValueError("x should be in (-1, 1) for arcsin")
         
 def arccos(x):
     if ((x._val - 1) < 0).all() and ((x._val + 1) > 0).all():
-        return Var(np.arccos(x._val), -x._der/np.sqrt(1-x._val**2))
+        return check_tol(Var(np.arccos(x._val), -x._der/np.sqrt(1-x._val**2)))
     else:
         raise ValueError("x should be in (-1, 1) for arccos")
         
 def arctan(x):
     if ((x._val - np.pi/2) < 0).all() and ((x._val + np.pi/2) > 0).all():
-        return Var(np.arctan(x._val), x._der/(1+x._val**2))
+        return check_tol(Var(np.arctan(x._val), x._der/(1+x._val**2)))
     else:
         raise ValueError("x should be in (-pi/2, pi/2) for arctan")
     
@@ -301,9 +285,9 @@ def log(x, base=None):
     """
     if (type(x._val) is float or type(x._val) is int and x._val != 0) or x._val.all():
         if base is None:
-            return Var(np.log(x._val), x._der/x._val)
+            return check_tol(Var(np.log(x._val), x._der/x._val))
         else:
-            return Var(np.log(x._val)/np.log(base), 1/(x._val*np.log(base)))
+            return check_tol(Var(np.log(x._val)/np.log(base), 1/(x._val*np.log(base))))
     else:
         raise ValueError("Cannot divide by zero")
         
@@ -325,7 +309,7 @@ def tanh(x):
 
 def sqrt(x):
     if (x._val > 0).all():
-        return Var(np.sqrt(x._val), x._der/(2*np.sqrt(x._val)))
+        return check_tol(Var(np.sqrt(x._val), x._der/(2*np.sqrt(x._val))))
     else:
         raise ValueError("x should be larger than 0")
         

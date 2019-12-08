@@ -3,21 +3,36 @@ import numpy as np
 import pytest
 
 def test_init():
+    # Simple scalar variables
+    x = AD.Var(1.0)
+    y = AD.Var(3.0, 1.2)
+    assert x.val == 1.0 and x.der == 1.0, "error with init"
+    assert y.val == 3.0 and y.der == 1.2, "error with init"
+    
+    # Scalar variables with array-like inputs
     x = AD.Var([1, 2, 3])
-    y = AD.Var(1)
-    z = AD.Var([1,2], [2,4])
+    y = AD.Var([1,2], [2,4])
     assert np.array_equal(x.val, [1, 2, 3]) and np.array_equal(x.der, np.ones(3)), "error with init"
-    assert y.val == 1.0 and y.der == 1.0, "error with init"
-    assert np.array_equal(z.val, [1, 2]) and np.array_equal(z.der, [2, 4]), "error with init"
-    with pytest.raises(KeyError) as e:
-        x = AD.Var(3, [1, 2])
-    assert str(e.value) == "'The format of value and derivative is not align'"
-
+    assert np.array_equal(y.val, [1, 2]) and np.array_equal(y.der, [2, 4]), "error with init"
+    
+    # Variables for vector functions
+    x = AD.Var(1, [1, 0, 0])
+    y = AD.Var(2, [0, 1, 0])
+    z = AD.Var(3, [0, 0, 1])
+    assert x.val == 1.0 and np.array_equal(x.der, [1, 0, 0]), "error with init"
+    assert y.val == 2.0 and np.array_equal(y.der, [0, 1, 0]), "error with init"
+    assert z.val == 3.0 and np.array_equal(z.der, [0, 0, 1]), "error with init"
+    
+    # Vector functions
+    f = AD.Var([2*x + x*y, -4*x*y])
+    g = AD.Var([AD.sin(4*x*y), -4*x*z, 2])
+    assert np.array_equal(f.val, [4, -8]) and np.array_equal(f.der, [[4, 1, 0],[-8, -4, 0]]), "error with init"
+    assert np.array_equal(g.val, [np.sin(8), -12, 2]) and np.array_equal(g.der, [[8*np.cos(8), 4*np.cos(8), 0], [-12, 0, -4], [0, 0, 0]]), "error with init"
     
 def test_val():
-    x = AD.Var([1], [1, 0, 0])
-    y = AD.Var([2], [0, 1, 0])
-    z = AD.Var([3], [0, 0, 1])
+    x = AD.Var(1, [1, 0, 0])
+    y = AD.Var(2, [0, 1, 0])
+    z = AD.Var(3, [0, 0, 1])
     u = AD.Var([x, y])
     f = x + y 
     assert x.val == 1.0, "error with val"
@@ -25,17 +40,17 @@ def test_val():
     assert f.val == 3.0, "error with val"
  
 def test_der():
-    x = AD.Var([1], [1, 0, 0])
-    y = AD.Var([2], [0, 1, 0])
-    z = AD.Var([3], [0, 0, 1])
+    x = AD.Var(1, [1, 0, 0])
+    y = AD.Var(2, [0, 1, 0])
+    z = AD.Var(3, [0, 0, 1])
     f = x + y + z
-    g = AD.Var([2 * x + x * y])
+    g = 2*x + x*y
     x1 = AD.Var(1.0)
     y1 = AD.Var(1.0, 0.1)
     assert x1.der == 1.0, "error with der"
     assert y1.der == 0.1, "error with der"
     assert np.array_equal(f.der, [1, 1, 1]), "error with der"
-    assert np.array_equal(g.der, [[4, 1, 0]]), "error with der"
+    assert np.array_equal(g.der, [4, 1, 0]), "error with der"
     
 def test_val_set():
     x = AD.Var(1.0)
@@ -61,14 +76,14 @@ def test__repr__():
     # Vector variables
     x = AD.Var([1, 2, 3], [1, 0, 0])
     y = AD.Var([4, 5, 6], [0, 1, 0])
-    assert repr(x+y) == f"Function values:\n{(x+y).val}\nDerivative values:\n{(x+y).der}"
+    assert repr(x+y) == f"Function values:\n[5. 7. 9.]\nDerivative values:\n[1. 1. 0.]"
 
-    x = AD.Var([1], [1, 0, 0])
-    y = AD.Var([2], [0, 1, 0])
-    z = AD.Var([3], [0, 0, 1])
+    x = AD.Var(1, [1, 0, 0])
+    y = AD.Var(2, [0, 1, 0])
+    z = AD.Var(3, [0, 0, 1])
     f = x + y + z
-    assert repr(f) == f"Function values:\n{f.val}\nGradient:\n{f.der}"
-    g = AD.Var([x, y ** 2, z ** 4])
+    assert repr(f) == f"Function value:\n6.0\nGradient:\n[1. 1. 1.]"
+    g = AD.Var([x, y**2, z**4])
     assert repr(g) == f"Function values:\n{g.val}\nJacobian:\n{g.der}"
     
 def test_neg():
@@ -83,10 +98,10 @@ def test_add():
     v = x + u
     assert y._val == 4.0 and y._der == 1.0, "error with add"
     assert v._val == 4.0 and v._der == 1.1, "error with add"
-    a = AD.Var([3], [1, 0])
-    b = AD.Var([4], [0, 1])
+    a = AD.Var(3, [1, 0])
+    b = AD.Var(4, [0, 1])
     z = a + b
-    assert np.array_equal(z._val, [7]) and np.array_equal(z._der, [1.0, 1.0]), "error with add"
+    assert z._val == 7.0 and np.array_equal(z._der, [1.0, 1.0]), "error with add"
 
 def test_radd():
     x = AD.Var(1.0)
@@ -215,14 +230,13 @@ def test_ne():
 
 #TODO: unfixed
 def test_AD_check_tol():
-    x = AD.Var([np.pi/4])
+    x = AD.Var(np.pi/4)
     y = AD.tan(x)
-    assert np.array_equal(y._val, [np.tan(np.pi/4)]) and np.array_equal(y._der, [2*np.tan(np.pi/4)]), "error with check_tol"
+    assert y._val == 1.0 and y._der == 2.0, "error with check_tol"
     z = np.linspace(0, 1, 100)
     u = AD.Var(z)
     v = AD.sin(u)
     assert np.array_equal(v._val, np.sin(z)) and np.array_equal(v._der, np.cos(z)), "error with check_tol"
-
 
 def test_exp():
     x = AD.Var([5.0])
@@ -230,9 +244,11 @@ def test_exp():
     assert np.array_equal(y._val, [32.]) and np.array_equal(y._der, [np.power(2, 5)*np.log(2)]), "error with exp"
 
 def test_log():
-    x = AD.Var([3.0]) 
-    y = AD.log(x, 2)
-    assert y._val[0] == np.log(3)/np.log(2) and y._der[0] == 1/(3*np.log(2)), "error with log"
+    x = AD.Var(3.0) 
+    y = AD.log(x)
+    z = AD.log(x, 2)
+    assert y.val == np.log(3) and y.der == 1/3, "error with log"
+    assert z.val == np.log(3)/np.log(2) and z.der == 1/(3*np.log(2)), "error with log base n"
     with pytest.raises(ValueError) as e:
         u = AD.Var([0])
         z = AD.log(u)
@@ -325,6 +341,6 @@ def test_sqrt():
     assert str(e.value) == "x should be larger than 0"
 
 def test_logistic():
-    x = AD.Var([1.0])
+    x = AD.Var(1.0)
     y = AD.logistic(x)
-    assert y._val[0] == 1/(1+np.exp(-1.0)) and y._der[0] == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
+    assert y._val == 1/(1+np.exp(-1.0)) and y._der == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
