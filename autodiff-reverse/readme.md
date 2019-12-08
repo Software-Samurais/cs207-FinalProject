@@ -1,9 +1,0 @@
-For the reverse mode, we need to build the computational graph and For the reverse mode, we need to build the computational graph and figure out the sequence of computation correctly to get the right gradient.
-
-Basically, there are two strategies of building the computational graph, static graph and dynamic graph. The former computes value and gradient after finishing graph and the latter do the computation dynamically. Although dynamic is easier to debug and more user-friendly, static graph is more clear to understand reverse mode and more suitable for this course. So we choose static graph based reverse mode as our main framework. 
-
-A computational graph consists of multiple nodes. Each node has two main attributes, self.inputs and self.op which indicate inputs of current node and the operation between inputs. It is worth mentioning that nodes are created by their own operation. 
-
-Several operations are implemented, such as add, add_by_const, mul, mul_by_const, tan, sin and so on. To better support higher order gradient computation, gradients of leaf and intermediate variable are also represented by nodes. As a result, our computational graph not only has nodes representing values of variable during forward propagation, but also has nodes representing gradients of variable during back propagation. If users want to compute higher order gradient, they can easily add new nodes representing gradient of nodes of low order gradient. With this mechanism, we can compute any order gradient. 
-
-How to find the path of creating nodes of gradients in the graph is also quite important to get correct results efficiently. Given a list of nodes, we use a post-order Depth First Search (DFS) to get a topological sort list of nodes ending in our target nodes. The reverse of this list is the right sequence to add nodes of gradients. 
