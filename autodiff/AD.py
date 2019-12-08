@@ -240,7 +240,7 @@ def tan(x):
     - (Var): Tangent value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    if cos(x)._val != 0:
+    if (type(x._val) is float or type(x._val) is int and np.abs(x._val - np.pi/2) > 10e-8) or np.abs(x._val - np.pi/2).all() > 10e-8:
         return Var(np.tan(x._val), np.cos(x._val)**(-2)*x._der)
     else:
         raise ValueError("Cannot divide by zero")
@@ -249,19 +249,22 @@ def tan(x):
 # ===============================
      
 def arcsin(x):
-    if abs(1-x._val**2) > 1e-8:
+    if ((x._val - 1) < 0).all() and ((x._val + 1) >0).all():
         return Var(np.arcsin(x._val), x._der/np.sqrt(1-x._val**2))
     else:
-        raise ValueError("Cannot divide by zero")
+        raise ValueError("x should be in (-1, 1) for arcsin")
         
 def arccos(x):
-    if abs(1-x._val**2) > 1e-8:
+    if ((x._val - 1) < 0).all() and ((x._val + 1) > 0).all():
         return Var(np.arccos(x._val), -x._der/np.sqrt(1-x._val**2))
     else:
-        raise ValueError("Cannot divide by zero")
+        raise ValueError("x should be in (-1, 1) for arccos")
         
 def arctan(x):
-    return Var(np.arctan(x._val), x._der/(1+x._val**2))
+    if ((x._val - np.pi/2) < 0).all() and ((x._val + np.pi/2) > 0).all():
+        return Var(np.arctan(x._val), x._der/(1+x._val**2))
+    else:
+        raise ValueError("x should be in (-pi/2, pi/2) for arctan")
     
 # Exponentials
 # ============
@@ -296,7 +299,7 @@ def log(x, base=None):
     - (Var): Logarithm value and the corresponding derivative value; 
       `check_tol` is called to remove rounding errors
     """
-    if (type(x._val) is float or type(x._val) is int and x._val != 0) or x._val.all() != 0:
+    if (type(x._val) is float or type(x._val) is int and x._val != 0) or x._val.all():
         if base is None:
             return Var(np.log(x._val), x._der/x._val)
         else:
@@ -321,10 +324,10 @@ def tanh(x):
 # ===========
 
 def sqrt(x):
-    if x._val > 0:
-        return Var(np.sqrt(x._val), -x._der/(2*np.sqrt(x._val)))
+    if (x._val > 0).all():
+        return Var(np.sqrt(x._val), x._der/(2*np.sqrt(x._val)))
     else:
-        raise ValueError("Invalid domain")
+        raise ValueError("x should be larger than 0")
         
 # Logisitc function
 # =================
