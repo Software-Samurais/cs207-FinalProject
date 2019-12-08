@@ -5,6 +5,6 @@ before_install:
     - pip install pytest pytest-cov
     - pip install codecov
 script:
-    - python -m pytest ./test/test_forward.py --cov --cov-report term-missing
+    - python -m pytest ./test/test_forward.py ./test/test_reverse.py --cov --cov-report term-missing
 after_success:
     - codecov
