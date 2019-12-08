@@ -1,3 +1,9 @@
+'''
+with reference to: course CSE 599W Syetems for ML and framework of their homwwork (w/o solution)
+1. https://dlsys.cs.washington.edu/
+2. https://github.com/dlsys-course/assignment1
+'''
+
 import numpy as np
 
 class Node(object):
@@ -216,13 +222,11 @@ class MulOp(Op):
 
     def compute(self, node, input_vals):
         """Given values of two input nodes, return result of element-wise multiplication."""
-        """TODO: Your code here"""
         assert len(input_vals) == 2
         return input_vals[0] * input_vals[1]
 
     def gradient(self, node, output_grad):
         """Given gradient of multiply node, return gradient contributions to each input."""
-        """TODO: Your code here"""
         return [output_grad*node.inputs[1], output_grad*node.inputs[0]]
 
 class MulByConstOp(Op):
@@ -236,13 +240,13 @@ class MulByConstOp(Op):
 
     def compute(self, node, input_vals):
         """Given values of input node, return result of element-wise multiplication."""
-        """TODO: Your code here"""
+
         assert len(input_vals) == 1
         return input_vals[0] * node.const_attr
 
     def gradient(self, node, output_grad):
         """Given gradient of multiplication node, return gradient contribution to input."""
-        """TODO: Your code here"""
+
         return [output_grad * node.const_attr]
 
 class MatMulOp(Op):
@@ -270,7 +274,7 @@ class MatMulOp(Op):
 
     def compute(self, node, input_vals):
         """Given values of input nodes, return result of matrix multiplication."""
-        """TODO: Your code here"""
+
         assert len(input_vals) == 2
         inp_A = input_vals[0].transpose() if node.matmul_attr_trans_A else input_vals[0]
         inp_B = input_vals[1].transpose() if node.matmul_attr_trans_B else input_vals[1]
@@ -281,7 +285,7 @@ class MatMulOp(Op):
             
         Useful formula: if Y=AB, then dA=dY B^T, dB=A^T dY
         """
-        """TODO: Your code here"""
+
         return [matmul_op(output_grad   , node.inputs[1], False, True), \
                 matmul_op(node.inputs[0], output_grad   , True , False)]
 
@@ -597,18 +601,17 @@ class Executor:
         A list of values for nodes in eval_node_list. 
         """
         node_to_val_map = dict(feed_dict)
-        print('init val_map:', node_to_val_map)
+        # print('init val_map:', node_to_val_map)
         # Traverse graph in topological sort order and compute values for all nodes.
         topo_order = find_topo_sort(self.eval_node_list)
-        print('topo_order:', list(topo_order))
-        """TODO: Your code here"""
+        # print('topo_order:', list(topo_order))
         for _i, node in enumerate(topo_order):
-            print('-'*30)
-            print(_i, node)
+            # print('-'*30)
+            # print(_i, node)
             if isinstance(node.op, PlaceholderOp):
                 continue
-            print('inputs:', _i, node.inputs)
-            print('inputs map:', _i, [node_to_val_map[i] for i in node.inputs])
+            # print('inputs:', _i, node.inputs)
+            # print('inputs map:', _i, [node_to_val_map[i] for i in node.inputs])
             node_to_val_map[node] = node.op.compute(node, 
                                     [node_to_val_map[i] for i in node.inputs])
 
@@ -641,19 +644,18 @@ def gradients(output_node, node_list):
     # Traverse graph in reverse topological order given the output_node that we are taking gradient wrt.
     reverse_topo_order = list(reversed(find_topo_sort([output_node])))
 
-    """TODO: """
     for _idx, node in enumerate(reverse_topo_order):
-        print('-'*30)
-        print(_idx, node)
-        print('op', node.op)
-        print('grad list', node_to_output_grads_list[node])
+        # print('-'*30)
+        # print(_idx, node)
+        # print('op', node.op)
+        # print('grad list', node_to_output_grads_list[node])
         grad = sum_node_list(node_to_output_grads_list[node])
         node_to_output_grad[node] = grad
         input_grads = node.op.gradient(node, grad)
         
-        print('grad:', grad)
-        print('inp_grads:', input_grads)
-        print('inp:', node.inputs)
+        # print('grad:', grad)
+        # print('inp_grads:', input_grads)
+        # print('inp:', node.inputs)
         for _i, inp_node in enumerate(node.inputs):
             node_to_output_grads_list[inp_node] = \
             node_to_output_grads_list[inp_node] + [input_grads[_i]] \
