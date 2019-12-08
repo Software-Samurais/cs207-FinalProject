@@ -204,6 +204,7 @@ def test_matmul_two_vars():
     assert np.array_equal(grad_x2_val, expected_grad_x2_val)
     assert np.array_equal(grad_x3_val, expected_grad_x3_val)
 
+
 def test_tan():
     # this can test tan, cos, sin and power at the same time
     x2 = ad.Variable(name = "x2")
@@ -247,4 +248,131 @@ def test_arccos():
 
     assert isinstance(y, ad.Node)
     assert np.array_equal(y_val, np.arccos(x2_val))
-    assert ((grad_x2_val -1./(1-x2_val**2)**0.5)<1e-7 ).all()
+    assert (abs(grad_x2_val + 1./(1-x2_val**2)**0.5)<1e-7 ).all()
+
+def test_exp():
+    x2 = ad.Variable(name = "x2")
+    y = ad.exp_op(x2, 5)
+
+    grad_x2, = ad.gradients(y, [x2])
+
+    executor = ad.Executor([y, grad_x2])
+    x2_val = 0.5 * np.ones(3)
+    y_val, grad_x2_val= executor.run(feed_dict = {x2 : x2_val})
+
+    assert isinstance(y, ad.Node)
+    assert np.array_equal(y_val, 5**x2_val)
+    assert (abs(grad_x2_val - np.log(5)*(5**x2_val))<1e-7 ).all()
+
+def test_log():
+    x2 = ad.Variable(name = "x2")
+    y = ad.log_op(x2, 5)
+
+    grad_x2, = ad.gradients(y, [x2])
+
+    executor = ad.Executor([y, grad_x2])
+    x2_val = 0.5 * np.ones(3)
+    y_val, grad_x2_val= executor.run(feed_dict = {x2 : x2_val})
+
+    assert isinstance(y, ad.Node)
+    assert np.array_equal(y_val, np.log(x2_val)/np.log(5))
+    assert (abs(grad_x2_val - 1./(x2_val*np.log(5)))<1e-7 ).all()
+
+
+def test_logistic():
+    x2 = ad.Variable(name = "x2")
+    y = ad.logistic_op(x2)
+
+    grad_x2, = ad.gradients(y, [x2])
+
+    executor = ad.Executor([y, grad_x2])
+    x2_val = 0.5 * np.ones(3)
+    y_val, grad_x2_val= executor.run(feed_dict = {x2 : x2_val})
+
+    assert isinstance(y, ad.Node)
+    assert np.array_equal(y_val, 1./(1+np.exp(-x2_val)))
+    print(grad_x2_val - 2*(1./(1+np.exp(-x2_val)))*(1-1./(1+np.exp(-x2_val))))
+    assert (abs(grad_x2_val - (1./(1+np.exp(-x2_val)))*(1-1./(1+np.exp(-x2_val))))<1e-7 ).all()
+
+
+
+def test_sinh():
+    # this can test tan, cos, sin and power at the same time
+    x2 = ad.Variable(name = "x2")
+    y = ad.sinh_op(x2)
+
+    grad_x2, = ad.gradients(y, [x2])
+
+    executor = ad.Executor([y, grad_x2])
+    x2_val = 2 * np.ones(3)
+    y_val, grad_x2_val= executor.run(feed_dict = {x2 : x2_val})
+
+    assert isinstance(y, ad.Node)
+    assert np.array_equal(y_val, np.sinh(x2_val))
+    assert np.array_equal(grad_x2_val, np.cosh(x2_val))
+
+def test_cosh():
+    # this can test tan, cos, sin and power at the same time
+    x2 = ad.Variable(name = "x2")
+    y = ad.cosh_op(x2)
+
+    grad_x2, = ad.gradients(y, [x2])
+
+    executor = ad.Executor([y, grad_x2])
+    x2_val = 2 * np.ones(3)
+    y_val, grad_x2_val= executor.run(feed_dict = {x2 : x2_val})
+
+    assert isinstance(y, ad.Node)
+    assert np.array_equal(y_val, np.cosh(x2_val))
+    assert np.array_equal(grad_x2_val, np.sinh(x2_val))
+
+def test_tanh():
+    # this can test tan, cos, sin and power at the same time
+    x2 = ad.Variable(name = "x2")
+    y = ad.tanh_op(x2)
+
+    grad_x2, = ad.gradients(y, [x2])
+
+    executor = ad.Executor([y, grad_x2])
+    x2_val = 2 * np.ones(3)
+    y_val, grad_x2_val= executor.run(feed_dict = {x2 : x2_val})
+
+    assert isinstance(y, ad.Node)
+    assert np.array_equal(y_val, np.tanh(x2_val))
+    assert np.array_equal(grad_x2_val, (np.cosh(x2_val)**2 - np.sinh(x2_val)**2)/np.cosh(x2_val)**2)
+
+def test_eq_node():
+    x2 = ad.Variable(name = "x2")
+    x3 = ad.Variable(name = "x3")
+    y = (x2==x3)
+
+    executor = ad.Executor([y])
+    x2_val = 2 * np.ones(3)
+    x3_val = 2 * np.ones(3)
+    y_val = executor.run(feed_dict = {x2 : x2_val, x3 : x3_val})
+
+    assert np.array_equal(y_val[0], x2_val==x3_val)
+
+def test_eq_const_node():
+    x2 = ad.Variable(name = "x2")
+    
+    y = (x2==2)
+
+    executor = ad.Executor([y])
+    x2_val = 2 * np.ones(3)
+
+    y_val = executor.run(feed_dict = {x2 : x2_val})
+
+    assert np.array_equal(y_val[0], x2_val==2)
+
+def test_ne_const_node():
+    x2 = ad.Variable(name = "x2")
+    
+    y = (x2!=2)
+
+    executor = ad.Executor([y])
+    x2_val = 2 * np.ones(3)
+
+    y_val = executor.run(feed_dict = {x2 : x2_val})
+
+    assert np.array_equal(y_val[0], x2_val!=2)

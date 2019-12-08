@@ -72,6 +72,19 @@ class Node(object):
             new_node = mul_byconst_op(self, other)
         return new_node
 
+    def __eq__(self, other):
+        if isinstance(other, Node):
+            new_node = eq_op(self, other)
+        else:
+            new_node = eq_op(self, other*oneslike_op(self))
+        return new_node
+    def __ne__(self, other):
+        return (self==other)==0
+
+    def __hash__(self):
+        return id(self)
+
+
     # Allow left-hand-side add and multiply.
     __radd__ = __add__
     __rmul__ = __mul__
@@ -172,6 +185,25 @@ class AddByConstOp(Op):
     def gradient(self, node, output_grad):
         """Given gradient of add node, return gradient contribution to input."""
         return [output_grad]
+
+class EqOp(Op):
+    """Op to element-wise add two nodes."""
+    def __call__(self, node_A, node_B):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A, node_B]
+        new_node.name = "(%s==%s)" % (node_A.name, node_B.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        """Given values of two input nodes, return result of element-wise addition."""
+        assert len(input_vals) == 2
+        return abs(input_vals[0] - input_vals[1])<1e-7
+
+    def gradient(self, node, output_grad):
+        """Given gradient of add node, return gradient contributions to each input."""
+        raise NotImplementedError
+
+
 
 
 class MulOp(Op):
@@ -299,6 +331,56 @@ class TanOp(Op):
     def gradient(self, node, output_grad):
         return [output_grad*(cos_op(node.inputs[0])**-2)]
 
+
+class SinhOp(Op):
+    """Op to element-wise sin of node."""
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "sinh(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.sinh(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [output_grad * cosh_op(node.inputs[0])]
+
+class CoshOp(Op):
+    """Op to element-wise cos of node."""
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "cosh(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.cosh(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [sinh_op(node.inputs[0]) * output_grad]
+
+class TanhOp(Op):
+    """Op to element-wise cos of node."""
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "tanh(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.tanh(input_vals[0])
+
+    def gradient(self, node, output_grad):
+        return [output_grad*(
+            (cosh_op(node.inputs[0])**2 - sinh_op(node.inputs[0])**2) 
+            * (cosh_op(node.inputs[0])**-2)
+        )]
+
+
 class ArcSinOp(Op):
 
     def __call__(self, node_A):
@@ -362,6 +444,55 @@ class PowerOp(Op):
         """Given gradient of add node, return gradient contribution to input."""
         return [output_grad * \
                 (node.const_attr * (node.inputs[0]**(node.const_attr-1)))]
+
+class ExpOp(Op):
+    def __call__(self, node_A, const_val):
+        new_node = Op.__call__(self)
+        new_node.const_attr = const_val
+        new_node.inputs = [node_A]
+        new_node.name = "%s**%s" % (str(const_val), node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return node.const_attr**input_vals[0]
+
+    def gradient(self, node, output_grad):
+        return [output_grad * \
+                (np.log(node.const_attr) * \
+                exp_op(node.inputs[0], node.const_attr))]
+
+class LogOp(Op):
+    def __call__(self, node_A, const_val):
+        new_node = Op.__call__(self)
+        new_node.const_attr = const_val
+        new_node.inputs = [node_A]
+        new_node.name = "log(%s,%s)" % (str(const_val), node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return np.log(input_vals[0]) / np.log(node.const_attr)
+
+    def gradient(self, node, output_grad):
+        return [output_grad * \
+                ((np.log(node.const_attr) * node.inputs[0])**-1)]
+
+
+class LogisticOp(Op):
+    def __call__(self, node_A):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A]
+        new_node.name = "logistic(%s)" % (node_A.name)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 1
+        return 1./(1+np.exp(-input_vals[0]))
+
+    def gradient(self, node, output_grad):
+        return [output_grad*\
+                (1./(1+exp_op(-node.inputs[0], np.e)))*(1-1./(1+exp_op(-node.inputs[0], np.e)))]
 
 class PlaceholderOp(Op):
     """Op to feed value to a nodes."""
@@ -429,10 +560,17 @@ matmul_op = MatMulOp()
 cos_op = CosOp()
 sin_op = SinOp()
 tan_op = TanOp()
+cosh_op = CoshOp()
+sinh_op = SinhOp()
+tanh_op = TanhOp()
 arccos_op = ArcCosOp()
 arcsin_op = ArcSinOp()
 arctan_op = ArcTanOp()
 power_op = PowerOp()
+exp_op = ExpOp()
+log_op = LogOp()
+logistic_op = LogisticOp()
+eq_op = EqOp()
 placeholder_op = PlaceholderOp()
 oneslike_op = OnesLikeOp()
 zeroslike_op = ZerosLikeOp()
