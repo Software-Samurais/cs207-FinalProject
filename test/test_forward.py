@@ -212,110 +212,119 @@ def test_ne():
     y = AD.Var([1, 2], [1, 0, 0])
     z = AD.Var([1, 2], [0, 1, 0])
     assert y != z, "error with eq"
-"""
+
 #TODO: unfixed
 def test_AD_check_tol():
-    x = AD.Var(np.pi/4)
+    x = AD.Var([np.pi/4])
     y = AD.tan(x)
-    assert y._val == 1.0 and y._der == 2.0, "error with check_tol"
+    assert np.array_equal(y._val, [np.tan(np.pi/4)]) and np.array_equal(y._der, [2*np.tan(np.pi/4)]), "error with check_tol"
     z = np.linspace(0, 1, 100)
     u = AD.Var(z)
     v = AD.sin(u)
     assert np.array_equal(v._val, np.sin(z)) and np.array_equal(v._der, np.cos(z)), "error with check_tol"
 
-##TODO: wrong caused by check_toi
 
 def test_exp():
-    x = AD.Var(1.0, 2.0)
-    y = AD.exp(x)
-    u = AD.Var(2.0, 3.0)
-    z = AD.exp(u) * AD.exp(x)
-    assert y._val == np.exp(1.0) and y._der == 2.0*np.exp(1.0), "error with exp"
-    assert z._val == np.exp(3.0) and np.abs(z._der - 5.0*np.exp(3.0)) < 10e-8, "error with exp"
+    x = AD.Var([5.0])
+    y = AD.exp(x, 2)
+    assert np.array_equal(y._val, [32.]) and np.array_equal(y._der, [np.power(2, 5)*np.log(2)]), "error with exp"
 
 def test_log():
-    x = AD.Var(2.0, 3.0) 
-    y = AD.log(x)
-    assert y._val == np.log(x._val) and y._der == 1.5, "error with log"
+    x = AD.Var([3.0]) 
+    y = AD.log(x, 2)
+    assert y._val[0] == np.log(3)/np.log(2) and y._der[0] == 1/(3*np.log(2)), "error with log"
     with pytest.raises(ValueError) as e:
-        u = AD.Var(0)
+        u = AD.Var([0])
         z = AD.log(u)
     assert str(e.value) == 'Cannot divide by zero'
-    
+
+  
 def test_sin():
-    x = AD.Var(np.pi/2)
+    x = AD.Var([np.pi/2])
     y = AD.sin(x)
-    u = AD.Var(np.pi/3, 2)
+    u = AD.Var([np.pi/3], [2])
     z = AD.sin(u)
-    assert y._val == 1.0 and y._der == 0.0, "error with sin"
-    assert np.abs(z._val - np.sin(np.pi/3)) < 10e-8 and np.abs(z._der - 1.0)< 10e-8, "error with sin"
+    assert y._val[0] == 1.0 and y._der[0] < 10e-8, "error with sin"
+    assert np.abs(z._val[0] - np.sin(np.pi/3)) < 10e-8 and np.abs(z._der[0] - 1.0)< 10e-8, "error with sin"
 
 def test_cos():
-    x = AD.Var(np.pi)
+    x = AD.Var([np.pi])
     y = AD.cos(x)
-    u = AD.Var(np.pi/6, 2)
+    u = AD.Var([np.pi/6], [2])
     z = AD.cos(u)
-    assert y._val == -1.0 and y._der == 0.0, "error with cos"
-    assert np.abs(z._val - np.cos(np.pi/6)) < 10e-8 and np.abs(z._der - (-1.0))< 10e-8, "error with cos"
+    assert y._val[0] == -1.0 and y._der < 10e-8, "error with cos"
+    assert np.abs(z._val[0] - np.cos(np.pi/6)) < 10e-8 and np.abs(z._der[0] - (-1.0))< 10e-8, "error with cos"
 
 def test_tan():
-    x = AD.Var(np.pi/4)
+    x = AD.Var([np.pi/4])
     y = AD.tan(x)
-    assert y._val == 1.0 and y._der == 2.0, "error with tan"
+    assert np.abs(y._val[0] - 1.0) <10e-8 and np.abs(y._der[0] - 2.0) < 10e-8, "error with tan"
     with pytest.raises(ValueError, match=r"Cannot divide by zero") as e:
-        u = AD.Var(np.pi/2)
+        u = AD.Var([np.pi/2])
         z = AD.tan(u)
     assert str(e.value) == 'Cannot divide by zero'
     
 def test_arcsin():
-    x = AD.Var(0.5)
+    #x = AD.Var(0.5)
+    #y = AD.arcsin(x)
+    #assert y._val == np.arcsin(0.5) and y._der == 1/np.sqrt(1-0.5**2), "error with arcsin"
+    x = AD.Var([0])
     y = AD.arcsin(x)
-    assert y._val == np.arcsin(0.5) and y._der == 1/np.sqrt(1-0.5**2), "error with arcsin"
+    assert y._val[0] == 0 and y._der[0] == 1, "error with arcsin"
     with pytest.raises(ValueError) as e:
-        u = AD.Var(1.0)
+        u = AD.Var([1.0])
         v = AD.arcsin(u)
-    assert str(e.value) == "Cannot divide by zero"
+    assert str(e.value) == "x should be in (-1, 1) for arcsin"
     
 def test_arccos():
-    x = AD.Var(0.5)
+    # x = AD.Var([0.5])
+    # y = AD.arccos(x)
+    # assert y._val == np.arccos(0.5) and y._der == -1/np.sqrt(1-0.5**2), "error with arccos"
+    x = AD.Var([0])
     y = AD.arccos(x)
-    assert y._val == np.arccos(0.5) and y._der == -1/np.sqrt(1-0.5**2), "error with arccos"
+    assert y._val[0] == np.arccos(0) and y._der[0] == -1, "error with arccos"
     with pytest.raises(ValueError) as e:
-        u = AD.Var(1.0)
+        u = AD.Var([-1.0])
         v = AD.arccos(u)
-    assert str(e.value) == "Cannot divide by zero"
+    assert str(e.value) == "x should be in (-1, 1) for arccos"
     
 def test_arctan():
-    x = AD.Var(1.0)
+    # x = AD.Var(1.0)
+    # y = AD.arctan(x)
+    # assert y._val == np.arctan(1.0) and y._der == 0.5, "error with arctan"
+    x = AD.Var([0])
     y = AD.arctan(x)
-    assert y._val == np.arctan(1.0) and y._der == 0.5, "error with arctan"
+    assert y._val[0] == np.arctan(0) and y._der[0] == 1, "error with arccos"
+    with pytest.raises(ValueError) as e:
+        u = AD.Var([-3.0])
+        v = AD.arctan(u)
+    assert str(e.value) == "x should be in (-pi/2, pi/2) for arctan"
 
 def test_sinh():
-    x = AD.Var(1.0)
+    x = AD.Var([1.0])
     y = AD.sinh(x)
-    assert y._val == np.sinh(1.0) and y._der == np.cosh(1.0), "error with sinh"
+    assert y._val[0] == np.sinh(1.0) and y._der[0] == np.cosh(1.0), "error with sinh"
 
 def test_cosh():
-    x = AD.Var(1.0)
+    x = AD.Var([1.0])
     y = AD.cosh(x)
-    assert y._val == np.cosh(1.0) and y._der == np.sinh(1.0), "error with cosh"
+    assert y._val[0] == np.cosh(1.0) and y._der[0] == np.sinh(1.0), "error with cosh"
     
 def test_tanh():
-    x = AD.Var(1.0)
+    x = AD.Var([1.0])
     y = AD.tanh(x)
-    assert y._val == np.tanh(1.0) and abs(y._der - 1/np.cosh(1.0)**2) < 1e-8, "error with tanh"
+    assert y._val[0] == np.tanh(1.0) and abs(y._der[0] - 1/np.cosh(1.0)**2) < 1e-8, "error with tanh"
     
 def test_sqrt():
-    x = AD.Var(4.0)
+    x = AD.Var([4.0])
     y = AD.sqrt(x)
-    assert y._val == 2.0 and y._der == -0.25, "error with sqrt"
+    assert y._val[0] == 2.0 and y._der[0] == 0.25, "error with sqrt"
     with pytest.raises(ValueError) as e:
-        u = AD.Var(-1.0)
+        u = AD.Var([-1.0])
         v = AD.sqrt(u)
-    assert str(e.value) == "Invalid domain"
+    assert str(e.value) == "x should be larger than 0"
 
 def test_logistic():
-    x = AD.Var(1.0)
+    x = AD.Var([1.0])
     y = AD.logistic(x)
-    assert y._val == 1/(1+np.exp(-1.0)) and y._der == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
-"""
+    assert y._val[0] == 1/(1+np.exp(-1.0)) and y._der[0] == np.exp(-1.0)/(1+np.exp(-1.0))**2, "error with logistic"
