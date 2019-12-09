@@ -321,7 +321,7 @@ class CosOp(Op):
         return [-sin_op(node.inputs[0]) * output_grad]
 
 class TanOp(Op):
-    """Op to element-wise cos of node."""
+    """Op to element-wise tan of node."""
     def __call__(self, node_A):
         new_node = Op.__call__(self)
         new_node.inputs = [node_A]
@@ -337,7 +337,7 @@ class TanOp(Op):
 
 
 class SinhOp(Op):
-    """Op to element-wise sin of node."""
+    """Op to element-wise sinh of node."""
     def __call__(self, node_A):
         new_node = Op.__call__(self)
         new_node.inputs = [node_A]
@@ -352,7 +352,7 @@ class SinhOp(Op):
         return [output_grad * cosh_op(node.inputs[0])]
 
 class CoshOp(Op):
-    """Op to element-wise cos of node."""
+    """Op to element-wise cosh of node."""
     def __call__(self, node_A):
         new_node = Op.__call__(self)
         new_node.inputs = [node_A]
@@ -367,7 +367,7 @@ class CoshOp(Op):
         return [sinh_op(node.inputs[0]) * output_grad]
 
 class TanhOp(Op):
-    """Op to element-wise cos of node."""
+    """Op to element-wise tanh of node."""
     def __call__(self, node_A):
         new_node = Op.__call__(self)
         new_node.inputs = [node_A]

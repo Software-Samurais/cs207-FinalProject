@@ -1,4 +1,4 @@
-import autodiff.reverse as ad
+import GuruDiff.reverse as ad
 import numpy as np
 
 def test_identity():
