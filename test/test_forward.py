@@ -1,4 +1,4 @@
-import autodiff.forward as forward
+import GuruDiff.forward as forward
 import numpy as np
 import pytest
 
