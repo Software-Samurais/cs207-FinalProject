@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="GuruDiff", 
-    version="1.0.0",
+    version="1.0.1",
     author="Erick Ruiz, Jingyuan Liu, Simon (Xin) Dong, Kailas Amin",
     author_email="eruiz@g.harvard.edu, jingyuanliu@g.harvard.edu, xindong@g.harvard.edu, kailasamin@college.harvard.edu",
     description="A easy-used auto-differentiation package, supporting both forward mode and reverse mode",
