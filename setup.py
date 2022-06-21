@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://https://github.com/Software-Samurais/cs207-FinalProject",
     install_requires = [
-        'numpy==1.17.3',
+        'numpy==1.22.0',
         'pytest==5.2.2'],
     packages=setuptools.find_packages(),
     classifiers=[
